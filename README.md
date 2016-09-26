@@ -5,4 +5,4 @@
   * Presented on 9/30/16
 
 ## Resources
-* Properly Editing the Wiki:https://meta.wikimedia.org/wiki/Help:Contents
+* Properly Editing the Wiki: https://meta.wikimedia.org/wiki/Help:Contents
