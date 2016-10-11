@@ -11,22 +11,19 @@ def vector_subtract(v, w):
     return [v_i - w_i for v_i, w_i in zip(v, w)]
 
 # componentwise sum of a list of vectors: create a new vector whose first element is the sum of all the first elements
-# def vector_sum(vectors):
-#     result = vectors[0]
-#     for vector in vectors[1:]:
-#         result = vector_add(result, vector)
-#     return result
-
 def vector_sum(vectors):
-    # reduce combines the first two elements of a list, then that result with the third, and so on
-    return reduce(vector_add, vectors)
-
+    result = vectors[0]
+    for vector in vectors[1:]:
+        result = vector_add(result, vector)
+    return result
+    
 def scalar_multiply(c, v):
     return [c * v_i for v_i in v]
 
 def vector_mean(vectors):
     n = len(vectors)
-    return scalar_multiply(1/n, vector_sum)
+    vectSum = vector_sum(vectors)
+    return scalar_multiply(1/n, vectSum)
 
 def dot(v, w):
     return sum(v_i * w_i for v_i, w_i in zip(v,w))

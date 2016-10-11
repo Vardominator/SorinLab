@@ -1,14 +1,15 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as mpl
+import matplotlib.pyplot as plt
 import random as rand
 import vardoVector as vect
-from kMeans import KMeans
+
+from kMeansClustering import KMeans
 
 def testRun():
 
 
-    csvPath = "C:/Users/barse/Desktop/Github/SorinLab/Clustering/freedomOfTheWorld2016.csv"
+    csvPath = "/home/varderes/Desktop/GitHub/SorinLab/Clustering/freedomOfTheWorld2016.csv"
     testDF = pd.read_csv(csvPath)
     testDF = testDF.dropna()
 
@@ -20,36 +21,43 @@ def testRun():
     sizeOfGovernment = testDF['SizeofGovernment']
     businessRegulation = testDF['Businessregulations']
     regulation = testDF['Regulation']
+    bureaucracycosts = testDF['Bureaucracycosts']
+    licensingrestrictions = testDF['Licensingrestrictions']
 
-    fig, axes = mpl.subplots(nrows=2, ncols=2)
+    # fig, axes = plt.subplots(nrows=2, ncols=2)
 
-    axes[0,0].scatter(governmentConsumption, economicSummaryIndex)
-    axes[0,0].set_title("Government Consumption")
-    axes[0,1].scatter(sizeOfGovernment, economicSummaryIndex)
-    axes[0,1].set_title("Size of Government")
-    axes[1,0].scatter(businessRegulation, economicSummaryIndex)
-    axes[1,0].set_title("Business Regulation")
-    axes[1,1].scatter(regulation, economicSummaryIndex)
-    axes[1,1].set_title("Regulation")
-    # mpl.show()
+    # axes[0,0].scatter(governmentConsumption, economicSummaryIndex)
+    # axes[0,0].set_title("Government Consumption")
+    # axes[0,1].scatter(sizeOfGovernment, economicSummaryIndex)
+    # axes[0,1].set_title("Size of Government")
+    # axes[1,0].scatter(businessRegulation, economicSummaryIndex)
+    # axes[1,0].set_title("Business Regulation")
+    # axes[1,1].scatter(bureaucracycosts, economicSummaryIndex)
+    # axes[1,1].set_title("Bureaucracy costs")
+    # plt.show()
 
+    plt.figure(1)
 
+    blah1 = economicSummaryIndex.tolist()
+    blah2 = licensingrestrictions.tolist()
+    blahFinal = list(zip(blah1, blah2))
+    #print(list(zip(blah1, blah2)))
 
-    x = [int(i) for i in regulation]
-    y = [int(i) for i in economicSummaryIndex]
+    rand.seed(20)
+    clusterer = KMeans(5, 100)
+    clusterer.train(blahFinal)
     
-    a = np.array([x, y])
-
-    print(a)
-
-    inputs = [[-14,-5],[13,13],[20,23],[-19,-11],[-9,-16],[21,27],[-49,15],[26,13],[-46,5],[-34,-1],[11,15],[-49,0],[-22,-16],[19,28],[-12,-8],[-13,-19],[-41,8],[-11,-6],[-25,-9],[-18,-3]]
-
-
-    rand.seed(40) # so you get the same results as me
-    clusterer = KMeans(3)
-    clusterer.train(inputs)
-    print("3-means:")
+    means = clusterer.means
     print(clusterer.means)
+    print(len(clusterer.means))
+    
+    meansx, meansy = zip(*means)
+
+    
+    plt.scatter(blah1, blah2)
+    plt.scatter(meansx, meansy, color='red')
+
+    plt.show()
 
 
 if __name__ == "__main__":

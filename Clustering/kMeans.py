@@ -51,12 +51,3 @@ if __name__ == "__main__":
     clusterer.train(inputs)
     print("3-means:")
     print(clusterer.means)
-    print(len(clusterer.means))
-
-    mpl.scatter(inputs[0], inputs[1])
-
-    #mpl.plot(inputs, 'ro')
-
-    
-
-    mpl.show()
