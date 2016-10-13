@@ -13,6 +13,7 @@ from linear_algebra import squared_distance, vector_mean, scalar_multiply, vecto
 import random
 import matplotlib.pyplot as plt
 import itertools
+import pandas as pd
 
 class KMeans:
 
@@ -62,27 +63,40 @@ def squared_clustering_errors(inputs, k):
 
 if __name__ == "__main__":
     
-    inputs = [[-14,-5],[13,13],[20,23],[-19,-11],[-9,-16],[21,27],[-49,15],[26,13],[-46,5],[-34,-1],[11,15],[-49,0],[-22,-16],[19,28],[-12,-8],[-13,-19],[-41,8],[-11,-6],[-25,-9],[-18,-3]]
+    # inputs = [[-14,-5],[13,13],[20,23],[-19,-11],[-9,-16],[21,27],[-49,15],[26,13],[-46,5],[-34,-1],[11,15],[-49,0],[-22,-16],[19,28],[-12,-8],[-13,-19],[-41,8],[-11,-6],[-25,-9],[-18,-3]]
+    # print(inputs)
 
-    vect1,vect2 = zip(*inputs)
+    # f = open('blah.txt', 'w')
+
+    # for row in inputs:
+    #     currentrow = '\t'.join(map(str,row))
+    #     f.write("%s\n" % currentrow)
+
+    # read input file into dataframe
+    dataFrame = pd.read_table("blah.txt", sep='\t', lineterminator='\n', header=None)
+    columns = [x for x in range(len(dataFrame.columns))]
+    dataFrame.columns = columns
+    clusterInputs = dataFrame.values.tolist()
+
+    testCol1, testCol2 = zip(*clusterInputs)
 
     random.seed(20)
-    clusterer = KMeans(15, 50)
-    clusterer.train(inputs)
+    clusterer = KMeans(3, 100)
+    clusterer.train(clusterInputs)
     centroids = clusterer.means
+    print(centroids)
     labels = [x for x in range(len(centroids))]
 
     plt.figure(1)
-    plt.scatter(vect1, vect2)
+    plt.scatter(testCol1, testCol2)
     for label, centroid in zip(labels, centroids):
         plt.annotate(label, xy = centroid)
 
 
-
     # plot from 1 up to len(inputs) clusters
 
-    ks = range(1, len(inputs) + 1)
-    errors = [squared_clustering_errors(inputs, k) for k in ks]
+    ks = range(1, len(testCol1) + 1)
+    errors = [squared_clustering_errors(clusterInputs, k) for k in ks]
 
     plt.figure(2)
     plt.plot(ks, errors)
