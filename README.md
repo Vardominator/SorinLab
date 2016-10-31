@@ -1,4 +1,5 @@
 # SorinLab - Molecular & Life Sciences Center
+## California State University, Long Beach
 
 ## Talks
 * Deep Learning Of The Tissue Regulated Splicing Code - Leung, Xiong, Lee, and Frey
