@@ -1,0 +1,55 @@
+# Function to check the existence of a file.
+# Used in conjunction with argparse to check that the given parameter files exist.
+def valid_file(path):
+    value = str(path)
+    if not os.path.isfile(value):
+        raise argparse.ArgumentTypeError(
+            '\"%s\" does not exist (must be in the same directory or specify full path).' % value)
+    return value
+
+
+# Function to check the existence of a directory.
+# Used in conjunction with argparse to check that the given parameter dataset exist.
+def valid_dir(path):
+    value = str(path)
+    if not os.path.exists(path):
+        raise argparse.ArgumentTypeError(
+            '\"%s\" does not exist (must be in the same directory or specify full path).' % value)
+    return value
+
+
+# Function to check that the name of logfile does not conflict with the name of a temp file in use by the program.
+def valid_outfile(name):
+    value = str(name)
+    if name == '3dnaout.txt':
+        raise argparse.ArgumentTypeError(
+            '\"{}\" is used within the program. Please choose another name for the outfile.'.format(name))
+    return value
+
+
+# Initialization of the argument parser.
+parser = argparse.ArgumentParser(
+    description='Generate a log containing rms, gyrate, hbond, hydation number, and X3DNA string for every frame off '
+                'every .xtc file in a FAH dataset. Tested using Gromacs 3.3, X3DNA 2.2, and MDTraj 1.7.2. '
+                'Relies on the Fix_3DNA_output.pl script (located on the wiki).',
+    epilog="Designed by Xavier Martinez on July 20th, 2016")
+parser.add_argument('AngstromCutoff', type=float,
+                    help='Cutoff value used to decide if water atom will be counted into the Hydration Number.')
+parser.add_argument('pdb', type=valid_file, help='The .pdb file')
+parser.add_argument('tpr', type=valid_file, help='The .tpr file.')
+parser.add_argument('nbp', type=valid_file, help='The native base pairs file.')
+parser.add_argument('ndx', type=valid_file, help='The .ndx file. (Protein before system)')
+parser.add_argument('wd', type=valid_dir, help='The working directory (must use FAH directory structure).')
+parser.add_argument('o', type=str, help='The name of the logfile.')
+parser.add_argument('t', type=int, default=2, help='The number of threads to run. Default is 2.')
+args = parser.parse_args()
+
+# Initialization of the variables that correspond to the arguments passed by the user.
+ANGSTROM_CUTOFF = args.AngstromCutoff / 10.00
+PDB = args.pdb
+NDX = args.ndx
+NBP = args.nbp
+TPR = args.tpr
+DATASET_DIRECTORY = args.wd
+OUT_FILE = args.o
+NUM_THREADS = args.t

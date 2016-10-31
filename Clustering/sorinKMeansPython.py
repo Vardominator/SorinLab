@@ -10,23 +10,45 @@
 
 '''
 
+import os
 import argparse
 import numpy as np
-
-
-# OPTIONS               PURPOSE                     DEFAULT                 FLAG
-# -------------------------------------------------------------------------------                                      
-data is None          # data to be clustered        [must specify]          -data
-k is None             # number of centers           [must specify]          -k
-name is None          # name out output file        [must specify]          -name
-numExp is None        # number of experiments       [must specify]          -nume
-conv = 10             # convergence requirement     10                      -conv
-n = 100               # maximum iterations          100                     -iter
-knownCenters = 0      # cluster center file         optional(fitting)       -clu
-mult = []             # multiplier                  optional                -mult
-hold = False          # do not move centers         off(testing only)       -hold
-
+import pandas as pd
+from linear_algebra import squared_distance, vector_mean
+from KMeans import KMeans
 
 # retrieve input parameters & flags
-parser = argparse.ArgumentParser()
-parser.parse_args()
+parser = argparse.ArgumentParser(
+    description='The Sorin kMeans script translated to Python 3.5 by Varderes Barsegyan\n\n'
+)
+
+parser.add_argument("data", type=str, help="data to be clustered")
+parser.add_argument("kCount", type=int, help="Number of clusters")
+parser.add_argument("outName", type=str, help="Name of the output file")
+parser.add_argument("numExp", type=int, help="Number of experiements")
+parser.add_argument("convCount", type=int, help="Convergence requirement")
+parser.add_argument("numIters", type=int, help="Maximum number of iterations")
+
+args = parser.parse_args()
+
+
+#initialize variables
+data = pd.read_csv(args.data, sep='\t')   # straight into data frame
+# testdata
+data = data.head(100)
+
+# assignment arguments to variables
+kCount = args.kCount
+outName = args.outName
+numExp = args.numExp
+convCount = args.convCount
+numIters = args.numIters
+
+# run kMeans clustering
+clusterer = KMeans(kCount, numIters)
+clusterer.train(data)
+finalCentroids = clusterer.clusters
+
+print(finalCentroids)
+
+
