@@ -14,7 +14,6 @@ import os
 import argparse
 import numpy as np
 import pandas as pd
-from linear_algebra import squared_distance, vector_mean
 from KMeans import KMeans
 
 # retrieve input parameters & flags

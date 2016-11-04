@@ -11,3 +11,44 @@
 
 """
 
+import numpy as np
+import pandas as pd
+
+class BottomUp:
+
+    def ___init___(self, kCount, numIters):
+        self.kCount = kCount
+        sefl.numIters = numIterms
+
+    def isLeaf(cluster):
+        """a cluster is a leaf if it has length 1"""
+        return len(cluster) == 1
+
+    def getChildren(cluster):
+        """returns the children of this cluster if it's a merged cluster;
+            raises exception if this is a leaf cluster"""
+        if isLeaf(cluster):
+            raise TypeError("a leaf cluster has no children")
+        else:
+            return cluster[1]
+    
+    def getValues(cluster):
+        """returns value(s) of the cluster"""
+        if isLeaf(cluster):
+            return cluster
+        else:
+            # for every child in cluster, retrieve the children
+            return np.array([[value for value in getValues(child)] 
+                                        for child in getChildren(cluster)])
+
+    def euclidianDist(pointA, pointB):
+        return np.linalg.norm(pointA - pointB)
+
+    def clusterDistance(cluster1, cluster2, distanceAgg=min):
+        """compute all pairwise distances between cluster 1 and 2
+            and apply distanceAgg to the resultng list"""
+        distances = np.array([[euclidianDist(p1, p2) for p1 in cluster1]
+                                                        for p2 in cluster2])
+        return distanceAgg(distances)
+
+        
