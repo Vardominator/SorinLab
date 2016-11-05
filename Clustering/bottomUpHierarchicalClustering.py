@@ -15,10 +15,19 @@ import numpy as np
 import pandas as pd
 
 class BottomUp:
+    
+    """
+    merged cluster will be represented as follows:
 
-    def ___init___(self, kCount, numIters):
-        self.kCount = kCount
-        sefl.numIters = numIterms
+    merged = [1, [leaf1, leaf2]]
+    merged = [2, [[leaf1, leaf2], [leaf1, leaf2]]
+    merged = [3, [[[...]]]]
+
+    The first value is the order of the merge. Order 1 means that there is a single cluster.
+    Order n means that there are n cluster.
+
+    The leaves in this case are the cluster points that are merged together.
+    """
 
     def isLeaf(cluster):
         """a cluster is a leaf if it has length 1"""
@@ -51,4 +60,29 @@ class BottomUp:
                                                         for p2 in cluster2])
         return distanceAgg(distances)
 
-        
+    def getMergeOrder(cluster):
+        if isLeaf(cluster):
+            return float('inf')
+        else:
+            return cluster[0]
+
+    def bottomUpCluster(inputs, distanceAgg = min):
+        cluster = np.array[inputs]
+
+        # as long as we have more than one cluster left
+        while len(cluster) > 1:
+            # find the two closest clusters
+            c1, c2 = min([(cluster1, cluster2)
+                            [for i, cluster1 in enumerate(clusters)]
+                                for cluster2 in clusters[:i]], key=lambda (x,y): clusterDistance(x, y, distanceAgg))
+            
+            # remove them from the list of clusters
+            clusters = np.array([c for c in clusters if c != c1 and c !=c2])
+
+            # merge them using mergeOrder
+            mergedCluster = np.array(len(clusters), [c1, c2])
+
+            # and add their merge
+            clusters = np.array(clusters, mergedCluster)
+
+        return clusters[0]

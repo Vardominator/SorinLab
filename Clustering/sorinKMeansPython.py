@@ -33,8 +33,19 @@ args = parser.parse_args()
 
 #initialize variables
 data = pd.read_csv(args.data, sep='\t')   # straight into data frame
-# testdata
-data = data.head(100)
+data.columns = ["Proj", "Run", "Clones", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2",
+                "T", "NC", "nonNC"]
+
+print(data.head())
+
+# Select only one folding@home project
+data = data.loc[data['Proj'] == 1796]
+
+# Select only one run of that project
+data = data.loc[data['Run'] == 0]
+
+# Finally, select only the relevant information for clustering
+data = data.iloc[:, 4:]
 
 # assignment arguments to variables
 kCount = args.kCount
