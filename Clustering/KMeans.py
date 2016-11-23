@@ -49,6 +49,7 @@ class KMeans:
                 else:
                     # get a new random point
                     self.clusters[i] = data[np.random.randint(0, data.shape[0], 1)]
-            
-            count += 1      
+
+            count += 1
+            print("Current: ", count, "; ", "Goal: ", self.numIters)      
 

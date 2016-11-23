@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 from KMeans import KMeans
 
+import matplotlib.pyplot as plt
+
 # retrieve input parameters & flags
 parser = argparse.ArgumentParser(
     description='The Sorin kMeans script translated to Python 3.5 by Varderes Barsegyan\n\n'
@@ -33,16 +35,24 @@ args = parser.parse_args()
 
 #initialize variables
 data = pd.read_csv(args.data, sep='\t')   # straight into data frame
-data.columns = ["Proj", "Run", "Clones", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2",
+data.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2",
                 "T", "NC", "nonNC"]
 
-print(data.head())
+
 
 # Select only one folding@home project
 data = data.loc[data['Proj'] == 1796]
 
 # Select only one run of that project
-data = data.loc[data['Run'] == 0]
+# data = data.loc[data['Run'] == 0]
+
+# Select only one clone from that run
+# data = data.loc[data['Clone'] == 5]
+
+# STARTING TIME
+data = data.loc[data['Time'] >= 6000]
+
+print(data.head())
 
 # Finally, select only the relevant information for clustering
 data = data.iloc[:, 4:]
@@ -60,5 +70,22 @@ clusterer.train(data)
 finalCentroids = clusterer.clusters
 
 print(finalCentroids)
+
+
+
+# plotting native contacts vs RMSD
+nativeContacts = data['NC']
+rmsd = data['rmsd']
+
+blah = finalCentroids[:, [0, 7]]
+
+
+
+print(blah)
+
+plt.scatter(rmsd, nativeContacts)
+plt.scatter(blah[:,0], blah[:,1], c='r', marker ='x', s = 20)
+
+plt.show()
 
 
