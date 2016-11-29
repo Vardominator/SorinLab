@@ -29,6 +29,7 @@ parser.add_argument("outName", type=str, help="Name of the output file")
 parser.add_argument("numExp", type=int, help="Number of experiements")
 parser.add_argument("convCount", type=int, help="Convergence requirement")
 parser.add_argument("numIters", type=int, help="Maximum number of iterations")
+parser.add_argument("reassignThresh", type=int, help="Maximum number of cluster reassigns")
 
 args = parser.parse_args()
 
@@ -44,15 +45,13 @@ data.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", 
 data = data.loc[data['Proj'] == 1796]
 
 # Select only one run of that project
-# data = data.loc[data['Run'] == 0]
+#data = data.loc[data['Run'] == 0]
 
 # Select only one clone from that run
-# data = data.loc[data['Clone'] == 5]
+#data = data.loc[data['Clone'] == 5]
 
 # STARTING TIME
 data = data.loc[data['Time'] >= 6000]
-
-print(data.head())
 
 # Finally, select only the relevant information for clustering
 data = data.iloc[:, 4:]
@@ -63,15 +62,12 @@ outName = args.outName
 numExp = args.numExp
 convCount = args.convCount
 numIters = args.numIters
+reassignThresh = args.reassignThresh
 
 # run kMeans clustering
-clusterer = KMeans(kCount, numIters)
+clusterer = KMeans(kCount, numIters, reassignThresh)
 clusterer.train(data)
 finalCentroids = clusterer.clusters
-
-print(finalCentroids)
-
-
 
 # plotting native contacts vs RMSD
 nativeContacts = data['NC']
@@ -79,13 +75,7 @@ rmsd = data['rmsd']
 
 blah = finalCentroids[:, [0, 7]]
 
-
-
-print(blah)
-
 plt.scatter(rmsd, nativeContacts)
 plt.scatter(blah[:,0], blah[:,1], c='r', marker ='x', s = 20)
 
 plt.show()
-
-
