@@ -48,7 +48,7 @@ data = data.loc[data['Proj'] == 1796]
 #data = data.loc[data['Run'] == 0]
 
 # Select only one clone from that run
-#data = data.loc[data['Clone'] == 5]
+data = data.loc[data['Clone'] == 1]
 
 # STARTING TIME
 data = data.loc[data['Time'] >= 6000]
