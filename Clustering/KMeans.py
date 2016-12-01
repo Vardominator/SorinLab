@@ -27,17 +27,21 @@ class KMeans:
 
     def assignedPosOkay(self, newPoint):
         """
-        Check if reassigned cluster point is too close to another cluster points
+        Check if reassigned cluster point is the same cluster point
         """
         for i in range(self.kCount):
             # check if newly assigned cluster is too close to another cluster point
             # also check if the cluster point has reached the threshold reassigned count
             #   if it has then reassignment near it is okay because that cluster will be discarded anyway
-            if np.linalg.norm(newPoint - self.clusters[i])/2 < self.averageDistBetPoints or self.clusterReassignCounts[i] == self.reassignThresh:
-                # print(np.linalg.norm(newPoint - self.clusters[i]))
+            if np.linalg.norm(newPoint - self.clusters[i]) == 0:
                 return False
-        
-        return True;
+
+        return True
+
+        # if self.clusterReassignCounts[i] < self.reassignThresh:
+        #     return True;
+        # else:
+        #     return False
 
 
     def train(self, data):
@@ -57,20 +61,18 @@ class KMeans:
         
         # mean distances used to check if reassigned cluster are near other clusters
         #   if so, they will be reassigned and it will count towards the threshold reassignment restriction
-        self.averageDistBetPoints = np.mean([self.distance(data[i], data[j]) for i in range(0, len(data) - 1) for j in range(i + 1, len(data))])
+        # self.averageDistBetPoints = np.mean([self.distance(data[i], data[j]) for i in range(0, len(data) - 1) for j in range(i + 1, len(data))])
         
-        print(self.averageDistBetPoints)
+        # print(self.averageDistBetPoints)
         
-
+        print(len(data))
 
         # ensure no two initial cluster points are too close to each other
-        # for i in range(len(self.clusters)):
-        #     if self.assignedPosOkay(self.clusters[i]) == False:
-        #         print("blah")
+        # for i in range(self.kCount):
+        #     if self.assignedPosOkay(self.clusters[i], i) == False:
         #         randomRow = np.random.randint(len(data), size = 1)
-        #         self.clusters[i] == data[randomRow, :]
-        #         self.clusterReassignCounts += 1
-
+        #         self.clusters[i] == data[randomRow]
+        #         self.clusterReassignCounts[i] += 1
 
 
         # Start kMeans algorithm
@@ -83,8 +85,8 @@ class KMeans:
                 newAssignments[i] = self.classify(data[i])
 
             # check for convergence: if new assignments have not changed
-            # if(assignments == newAssignments):
-            #     break
+            if(assignments == newAssignments):
+                break
             
             assignments = newAssignments
 
@@ -98,7 +100,7 @@ class KMeans:
                     npiPoints = np.array(iPoints)
                 
                     # make sure iPoints is not empty
-                    if len(iPoints) > 0:
+                    if len(iPoints) > int(len(data) * 0.01):
                         self.clusters[i] = npiPoints.mean(axis = 0)
                     else:
                         self.clusterReassignCounts[i] += 1
@@ -107,8 +109,8 @@ class KMeans:
                         reassignment = data[np.random.randint(0, data.shape[0], 1)]
 
                         # Keep reassigning if reassigned position is too close to another cluster point
-                        while(self.ssignedPosOkay(reassignment) == False):
-                            self.clusterReassignCounts[i] += 1
+                        while(self.assignedPosOkay(reassignment) == False):
+                            # self.clusterReassignCounts[i] += 1
                             reassignment = data[np.random.randint(0, data.shape[0], 1)]
                         
                         self.clusters[i] = reassignment
