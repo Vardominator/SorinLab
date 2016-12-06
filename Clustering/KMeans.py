@@ -12,6 +12,8 @@ class KMeans:
 
         self.averageDistBetPoints = 0
 
+        self.finalClusterCount = 0
+
     def classify(self, input):
         """
         return the index of the cluster closest to the input.
@@ -65,7 +67,7 @@ class KMeans:
         
         # print(self.averageDistBetPoints)
         
-        print(len(data))
+        # print(len(data))
 
         # ensure no two initial cluster points are too close to each other
         # for i in range(self.kCount):
@@ -118,11 +120,12 @@ class KMeans:
 
             count += 1
 
-            print(self.clusterReassignCounts)
-            print("Goal: ", self.numIters, "; ", "Current(including convergence): ", count)
+            # print(self.clusterReassignCounts)
+            # print("Goal: ", self.numIters, "; ", "Current(including convergence): ", count)
 
         # remove clusters that were reassigned more than the threshold reassignment value
         self.clusters = np.array([self.clusters[x] 
                                     for x in range(len(self.clusters)) 
                                         if self.clusterReassignCounts[x] <= self.reassignThresh])
-        print(len(self.clusters))
+        # print("Cluster count: ", len(self.clusters))
+        self.finalClusterCount = len(self.clusters)
