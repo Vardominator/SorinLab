@@ -4,7 +4,7 @@ import matplotlib.mlab as mlab
 import pandas as pd
 
 
-clusterCounts = pd.read_csv('clusterCountDistribution', sep="\n", header=None)
+clusterCounts = pd.read_csv('clusterCountDistribution2', sep="\n", header=None)
 
 print(np.mean(clusterCounts))
 print(np.std(clusterCounts))
