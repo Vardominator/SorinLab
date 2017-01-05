@@ -2,36 +2,30 @@
     Protein data partitioner
 """
 
-import pandas as pd
-
-class Partitioner:
-
-    # load data set and set column names 
-    def __init__(self, datasetPath):
-        self.data = pd.read_csv(datasetPath) 
-        self.data.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2",
-                "T", "NC", "nonNC"]
+class Partitioner():
 
     # partition data by time
-    def selectByTime(self, startTime=0, endTime=data['Time'].iloc[-1]):
-        data = data.loc[data['Time'] >= startTime]
-        data = data.loc[data['Time'] <= endTime]
+    def selectByTime(self, dataframe, startTime, endTime):
+        dataframe = dataframe.loc[data['Time'] >= startTime]
+        dataframe = dataframe.loc[data['Time'] <= endTime]
+        return dataframe
 
-    
     # select by project
-    def selectByProject(self, projectNumber):
-        data = data.loc[data['Proj'] == projectNumber]
+    def selectByProject(self, dataframe, projectNumber):
+        dataframe = dataframe.loc[data['Proj'] == projectNumber]
+        return dataframe
 
     # select by run
-    def selectByRun(self, runNumber):
-        data = data.loc[data['Run'] == runNumber]
+    def selectByRun(self, dataframe, runNumber):
+        dataframe = dataframe.loc[data['Run'] == runNumber]
+        return dataframe
 
     # select by clone
-    def selectByClone(self, cloneNumber):
-        data = data.loc[data['Clone'] == cloneNumber]
+    def selectByClone(self, dataframe, cloneNumber):
+        dataframe = dataframe.loc[data['Clone'] == cloneNumber]
+        return dataframe
 
-    # remove all bookkeeping data (project, run, clone, and time) this is necessary for clustering
-    def removeAllBookkeeping(self):
-        data = data.iloc[:, 4:]
-
-
+    # remove all bookkeeping data (project, run, clone, time, and date?) this is necessary for clustering
+    def removeAllBookkeeping(self, dataframe):
+        dataframe = dataframe.iloc[:, 4:]
+        return dataframe
