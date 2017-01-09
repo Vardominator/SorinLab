@@ -5,6 +5,8 @@
 from Partitioner import Partitioner
 from Normalizer import Normalizer
 
+from Clustering import KMeans
+
 import pandas as pd
 
 import os
@@ -30,6 +32,7 @@ cleanedData = partitioner.removeAllBookkeeping(dataframe)
 
 # test Normalizer class
 normalizer = Normalizer()
-normalizedData = normalizer.FeatureScale(cleanedData)
+normalizedData = normalizer.FeatureScale(dataframe)
 
+print(normalizedData.head(50))
 

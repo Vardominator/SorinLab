@@ -13,3 +13,12 @@ class Normalizer():
     def FeatureScale(self, dataframe):
         dataframe = (dataframe - dataframe.min()) / (dataframe.max() - dataframe.min())
         return dataframe
+
+    def AverageConstant(self, dataframe):
+        dataframe = dataframe / dataframe.mean()
+        return dataframe
+
+    def AverageConstantSpecial(self, dataframe, L2Thresh, TertiaryThresh):
+        dataframe = dataframe.loc[dataframe['L2'] > L2Thresh and dataframe['T'] > TertiaryThresh]
+        dataframe = dataframe.mean()
+        return dataframe
