@@ -19,14 +19,29 @@ startTime = time.time()
 
 class KMeans:
     def __init__(self):
-        print("blah KMeans")
-    def Run(self, data, nClusters):
-        os.makedirs("RESULTS/KMeans/" + dtDirectory)
+        """
+        Initialization can be 'random' or 'k-means++'
+        """
+        self.initialization = ''
+        self.nClusters = 0
+        self.maxIter = 0
+        self.nInit = 0
+        self.data = None
+        
+    def Run(self, data, init, nClusters, maxIter, nInit):
+        self.initialization = init          # method for initialization
+        self.nClusters = nClusters          # number of clusters
+        self.maxIter = maxIter              # max number of iteration
+        self.nInit = nInit                  # num of runs with different centroid seeds
+        self.data = data
+        kMeans = KMeans(init=init, n_clusters=nClusters, n_init=nInit, max_iter=maxIter).fit(data)
 
-class KMeansPlusPlus:
-    def __init__(self):
-        print("blah KMeans++")
+    def SaveResults(self, location=""):
+        currentDirectory = location + "RESULTS/KMeans/" + dtDirectory
+        os.makedirs(currentDirectory)
 
+    def PlotResults(self):
+        print("yo yo")
 
 class DensityBasedScan:
     def __init__(self):
@@ -67,3 +82,6 @@ class DensityBasedScan:
         f.write("Elapsed time: " + str(time.time() - startTime))
 
         f.close()
+
+    def PlotResults(self):
+        print("yo yo")
