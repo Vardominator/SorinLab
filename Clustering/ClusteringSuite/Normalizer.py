@@ -4,7 +4,7 @@
     source: https://en.wikipedia.org/wiki/Normalization_(statistics)
 """
 
-class Normalizer():
+class Normalizer:
 
     def StandardScore(self, dataframe):
         dataframe = (dataframe - dataframe.mean()) / dataframe.std()

@@ -2,7 +2,7 @@
     Protein data partitioner
 """
 
-class Partitioner():
+class Partitioner:
 
     # partition data by time
     def selectByTime(self, dataframe, startTime, endTime):
@@ -12,17 +12,17 @@ class Partitioner():
 
     # select by project
     def selectByProject(self, dataframe, projectNumber):
-        dataframe = dataframe.loc[data['Proj'] == projectNumber]
+        dataframe = dataframe.loc[dataframe['Proj'] == projectNumber]
         return dataframe
 
     # select by run
     def selectByRun(self, dataframe, runNumber):
-        dataframe = dataframe.loc[data['Run'] == runNumber]
+        dataframe = dataframe.loc[dataframe['Run'] == runNumber]
         return dataframe
 
     # select by clone
     def selectByClone(self, dataframe, cloneNumber):
-        dataframe = dataframe.loc[data['Clone'] == cloneNumber]
+        dataframe = dataframe.loc[dataframe['Clone'] == cloneNumber]
         return dataframe
 
     # remove all bookkeeping data (project, run, clone, time, and date?) this is necessary for clustering
