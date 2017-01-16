@@ -29,3 +29,7 @@ class Partitioner:
     def removeAllBookkeeping(self, dataframe):
         dataframe = dataframe.iloc[:, 4:]
         return dataframe
+
+    def removeNativeContacts(self, dataframe):
+        dataframe = dataframe.drop(['NC'], 1)
+        return dataframe
