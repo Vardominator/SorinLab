@@ -67,3 +67,7 @@ class DensityBasedScan:
         f.write("Elapsed time: " + str(time.time() - startTime))
 
         f.close()
+
+
+    def SavePlots(self, location=""):
+        
