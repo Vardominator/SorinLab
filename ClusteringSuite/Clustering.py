@@ -1,10 +1,16 @@
+# Data
 import numpy as np
 import pandas as pd
 
+# Intelligence
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn import metrics
 from scipy.spatial.distance import cdist, pdist
 
+# Visualization
+import matplotlib.pyplot as plt
+
+# System
 import datetime
 import os
 import time
@@ -70,4 +76,10 @@ class DensityBasedScan:
 
 
     def SavePlots(self, location=""):
+        # Saving plots using scheme from sklearn example
         
+        unique_labels = set(self.labels)
+        colors = plt.cm.Spectral(np.linspace(0, 1, len(unique_labels)))
+
+        for k, col in zip(unique_labels, colors):
+
