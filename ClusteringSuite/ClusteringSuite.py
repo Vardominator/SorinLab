@@ -4,7 +4,7 @@
 
 from Partitioner import Partitioner
 from Normalizer import Normalizer
-from Clustering import DensityBasedScan
+from Clustering import DBSCANSession
 
 from Clustering import KMeans
 
@@ -39,7 +39,8 @@ normalizedData = normalizer.FeatureScale(cleanedData)
 
 print(normalizedData.head())
 
-dbscanTest = DensityBasedScan()
+dbscanTest = DBSCANSession()
 dbscanTest.Run(normalizedData, .35, 400)
 dbscanTest.SaveResults()
+dbscanTest.SavePlots()
 

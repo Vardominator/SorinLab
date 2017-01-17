@@ -16,7 +16,7 @@
 * Create input sequences for front-end application.
  * - [x] Uncompleted
  * - [ ] Completed
-* Create an option for running clustering in batches (ex. 20 runs at a time). This feature should be multithreaded.
+* Create an option for running clustering in batches (ex. 20 runs at a time). This feature should be multithreaded and using a Batchrunner class.
  * - [x] Uncompleted
  * - [ ] Completed
 * Build graphical front-end on javascript or PyQt.
@@ -34,7 +34,9 @@
 * Compare my Kmeans with sklearn's kmeans.
  * - [x] Uncompleted
  * - [ ] Completed
-
+* Make interactive plots via the bokeh library
+ * - [x] Uncompleted
+ * - [ ] Completed
 
 ## Ongoing Tasks
 * Ensure all code follows Python standard
