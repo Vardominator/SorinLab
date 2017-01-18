@@ -41,54 +41,81 @@ data.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", 
 
 
 
-# Select only one folding@home project
-data = data.loc[data['Proj'] == 1796]
+# # Select only one folding@home project
+# data = data.loc[data['Proj'] == 1796]
 
-# Select only one run of that project
-#data = data.loc[data['Run'] == 0]
+# # Select only one run of that project
+# #data = data.loc[data['Run'] == 0]
 
-# Select only one clone from that run
-data = data.loc[data['Clone'] == 1]
+# # Select only one clone from that run
+# data = data.loc[data['Clone'] == 1]
 
-# STARTING TIME
-data = data.loc[data['Time'] >= 6000]
+# # STARTING TIME
+# data = data.loc[data['Time'] >= 6000]
 
 # Finally, select only the relevant information for clustering
 data = data.iloc[:, 4:]
 
+data = (data - data.min()) / (data.max() - data.min())
+
+# assignment arguments to variables
+kCount = args.kCount
+outName = args.outName
+numExp = args.numExp
+convCount = args.convCount
+numIters = args.numIters
+reassignThresh = args.reassignThresh
+
+# run kMeans clustering
+clusterer = KMeans(kCount, numIters, reassignThresh)
+clusterer.train(data)
+finalCentroids = clusterer.clusters
+
+# plotting native contacts vs RMSD
+nativeContacts = data['NC']
+rmsd = data['rmsd']
+
+blah = finalCentroids[:, [0, 7]]
+
+plt.scatter(rmsd, nativeContacts)
+plt.scatter(blah[:,0], blah[:,1], c='r', marker ='x', s = 20)
+
+
+plt.show()
+
 
 # find distribution of cluster counts
 
-f = open('clusterCountDistribution2', 'w')
+# f = open('clusterCountDistribution2', 'w')
 
-for i in range(1000):
+# for i in range(1000):
     
-    print("Goal: ", 1000, "; ", "Current: ", i)
+#     print("Goal: ", 1000, "; ", "Current: ", i)
 
-    # assignment arguments to variables
-    kCount = args.kCount
-    outName = args.outName
-    numExp = args.numExp
-    convCount = args.convCount
-    numIters = args.numIters
-    reassignThresh = args.reassignThresh
+#     # assignment arguments to variables
+#     kCount = args.kCount
+#     outName = args.outName
+#     numExp = args.numExp
+#     convCount = args.convCount
+#     numIters = args.numIters
+#     reassignThresh = args.reassignThresh
 
-    # run kMeans clustering
-    clusterer = KMeans(kCount, numIters, reassignThresh)
-    clusterer.train(data)
-    finalCentroids = clusterer.clusters
+#     # run kMeans clustering
+#     clusterer = KMeans(kCount, numIters, reassignThresh)
+#     clusterer.train(data)
+#     finalCentroids = clusterer.clusters
 
-    f.write(str(clusterer.finalClusterCount) + "\n")
+#     f.write(str(clusterer.finalClusterCount) + "\n")
 
-    print("Current cluster count: ", clusterer.finalClusterCount)
+#     print("Current cluster count: ", clusterer.finalClusterCount)
 
-    # plotting native contacts vs RMSD
-    nativeContacts = data['NC']
-    rmsd = data['rmsd']
+#     # plotting native contacts vs RMSD
+#     nativeContacts = data['NC']
+#     rmsd = data['rmsd']
 
-    blah = finalCentroids[:, [0, 7]]
+#     blah = finalCentroids[:, [0, 7]]
 
-f.close()
+# f.close()
 
 # plt.scatter(rmsd, nativeContacts)
 # plt.scatter(blah[:,0], blah[:,1], c='r', marker ='x', s = 20)

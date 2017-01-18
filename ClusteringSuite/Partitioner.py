@@ -26,6 +26,8 @@ class Partitioner:
         return dataframe
 
     # remove all bookkeeping data (project, run, clone, time, and date?) this is necessary for clustering
-    def removeAllBookkeeping(self, dataframe):
+    def removeAllBookkeeping(self, dataframe, remove_native_contacts=False):
         dataframe = dataframe.iloc[:, 4:]
+        if remove_native_contacts:
+            dataframe = dataframe.drop('NC', 1)
         return dataframe

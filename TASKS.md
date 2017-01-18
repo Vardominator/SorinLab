@@ -1,6 +1,9 @@
 # Research Tasks
 
 ## Clustering Suite
+* Run KMeans and DBSCAN on the ENTIRE luteo dataset and show Dr. Sorin the results
+ * - [x] Uncompleted
+ * - [ ] Completed
 * Finish Clustering class with fully implemented kmeans and DBSCAN.
  * - [x] Uncompleted
  * - [ ] Completed
