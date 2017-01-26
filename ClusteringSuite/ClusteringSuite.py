@@ -23,6 +23,7 @@ args = parser.parse_args()
 
 dataframe = pd.read_csv(args.data, sep='\t')
 
+print(pd.__version__)
 
 dataframe = dataframe.iloc[:, 0:13]
 dataframe.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2", "T", "NC", "nonNC"]
