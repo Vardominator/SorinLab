@@ -4,13 +4,12 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.datasets import make_blobs
 
-blobs, labels = make_blobs(n_samples = 20000, n_features=2)
-test_df = pd.DataFrame(blobs).head()
-print(test_df)
 
 luteo = pd.read_csv('luteo_100000_sample.csv')
 luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'NC']]
-print(luteo_rmsd_nc.head())
+# print(luteo_rmsd_nc.head())
+
+print(luteo.columns.values)
 
 clusterer = hdbscan.HDBSCAN(min_cluster_size=500)
 cluster_labels = clusterer.fit_predict(luteo)
@@ -26,7 +25,27 @@ cluster_colors = [color_palette[x] if x >= 0
 cluster_member_colors = [sns.desaturate(x, p) for x, p in
                          zip(cluster_colors, clusterer.probabilities_)]
 
-luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'NC']]
+# luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'Rg', 'NC', 'nonNC']]
 
-plt.scatter(luteo.rmsd, luteo.NC, s=50, linewidth=0, c=cluster_member_colors, alpha=0.25)
+
+features = ['rmsd', 'Rg', 'NC', 'nonNC']
+
+f, axarr = plt.subplots(4, 4)
+for feature1 in features:
+    for feature2 in features:
+        x = features.index(feature1) - 1
+        y = features.index(feature2) - 1
+
+        if x is not y:
+            axarr[x, y].set_title('{} vs {}'.format(feature1, feature2))
+        else:
+            axarr[x, y].set_title(feature1)
+
+        axarr[x, y].scatter(luteo[feature1], luteo[feature2], s=50, linewidth=0, c=cluster_member_colors, alpha=0.25)
+        axarr[x, y].get_xaxis().set_visible(False)
+        axarr[x, y].get_yaxis().set_visible(False)
+
+plt.setp([a.get_xticklabels() for a in axarr[0,:]], visible=False)
+plt.setp([a.get_yticklabels() for a in axarr[:,1]], visible=False)
+# plt.scatter(luteo['rmsd'], luteo['NC'], s=50, linewidth=0, c=cluster_member_colors, alpha=0.25)
 plt.show()
