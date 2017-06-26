@@ -4,9 +4,9 @@
 
 from Partitioner import Partitioner
 from Normalizer import Normalizer
-from Clustering import DBSCANSession
+# from Clustering import DBSCANSession
 
-from Clustering import KMeansSession, DBSCANSession
+# from Clustering import KMeansSession, DBSCANSession
 
 import pandas as pd
 
@@ -20,38 +20,42 @@ parser = argparse.ArgumentParser(
 parser.add_argument("data", type=str, help="data to be clustered")
 
 args = parser.parse_args()
-
 dataframe = pd.read_csv(args.data, sep='\t')
 
-print(pd.__version__)
+# print(pd.__version__)
 
-dataframe = dataframe.iloc[:, 0:13]
-dataframe.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2", "T", "NC", "nonNC"]
+# dataframe = dataframe.iloc[:, 0:13]
+# dataframe.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2", "T", "NC", "nonNC"]
 
-dataframe = dataframe.sample(n=100000)
+# dataframe = dataframe.sample(n=100000)
 
-print(dataframe.head())
+# print(dataframe.tail())
 
 # test Partitioner class
 partitioner = Partitioner()
-singleProject = partitioner.selectByProject(dataframe, 1796)
+# singleProject = partitioner.selectByProject(dataframe, 1796)
 # singleRun = partitioner.selectByRun(singleProject, 1)
+dataframe = partitioner.selectByTime(dataframe, 600, 50000)
+# print(dataframe.sample(n=100))
 
-cleanedData = partitioner.removeAllBookkeeping(singleProject, remove_native_contacts=False)
+cleanedData = partitioner.removeAllBookkeeping(dataframe, remove_native_contacts=False)
+cleanedData = cleanedData.round(3)
 
-# test Normalizer class
-normalizer = Normalizer()
-normalizedData = normalizer.FeatureScale(cleanedData)
+print(cleanedData.head())
 
-print(normalizedData.tail())
+# # test Normalizer class
+# normalizer = Normalizer()
+# normalizedData = normalizer.FeatureScale(cleanedData)
+
+# print(normalizedData.tail())
 
 # kmeansTest = KMeansSession('k-means++')
 # kmeansTest.Run(normalizedData, 11, nJobs=10)
 # kmeansTest.SaveResults()
 # kmeansTest.SavePlots()
 
-dbscanTest = DBSCANSession()
-dbscanTest.Run(normalizedData, .35, 400)
-dbscanTest.SaveResults()
-dbscanTest.SavePlots()
+# dbscanTest = DBSCANSession()
+# dbscanTest.Run(normalizedData, .35, 400)
+# dbscanTest.SaveResults()
+# dbscanTest.SavePlots()
 

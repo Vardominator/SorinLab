@@ -6,8 +6,8 @@ class Partitioner:
 
     # partition data by time
     def selectByTime(self, dataframe, startTime, endTime):
-        dataframe = dataframe.loc[data['Time'] >= startTime]
-        dataframe = dataframe.loc[data['Time'] <= endTime]
+        dataframe = dataframe.loc[dataframe['Time'] >= startTime]
+        dataframe = dataframe.loc[dataframe['Time'] <= endTime]
         return dataframe
 
     # select by project
