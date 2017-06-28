@@ -28,7 +28,7 @@ cluster_member_colors = [sns.desaturate(x, p) for x, p in
 # luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'Rg', 'NC', 'nonNC']]
 
 
-features = ['rmsd', 'Rg', 'NC', 'nonNC']
+features = ['Rg', 'NC']
 
 f, axarr = plt.subplots(4, 4)
 for feature1 in features:
