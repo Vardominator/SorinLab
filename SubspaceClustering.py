@@ -8,7 +8,7 @@ def normalize(df, param):
 luteo = pd.read_csv("luteo-1796-1798.txt", sep='\t')
 luteo.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2", "T", "NC", "nonNC"]
 
-luteo = luteo.loc[random.sample(list(luteo.index), 10000)]
+luteo = luteo.loc[random.sample(list(luteo.index), 100000)]
 luteo = luteo.drop(luteo.columns[[0,1,2,3]], axis=1)
 normalize(luteo, 'rmsd')
 normalize(luteo, 'Rg')
@@ -16,7 +16,7 @@ print(luteo)
 
 # normalize rmsd and rg
 
-luteo.to_csv('luteo_10000_sample.csv', header=True, index=False)
+luteo.to_csv('luteo_100000_sample.csv', header=True, index=False)
 
 
 # def SUBCLU(df, eps, min):

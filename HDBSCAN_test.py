@@ -3,18 +3,21 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.datasets import make_blobs
+from sklearn.cluster import KMeans, DBSCAN
 
 
 luteo = pd.read_csv('luteo_100000_sample.csv')
-luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'NC']]
-# print(luteo_rmsd_nc.head())
+print(len(luteo))
+# print(luteo.columns.values)
 
-print(luteo.columns.values)
+# HDBSCAN
+# clusterer = hdbscan.HDBSCAN(min_cluster_size=500)
 
-clusterer = hdbscan.HDBSCAN(min_cluster_size=500)
+# DBSCAN
+clusterer = DBSCAN(eps=0.3, min_samples=500)
+
 cluster_labels = clusterer.fit_predict(luteo)
 
-print(len(clusterer.labels_))
 
 color_palette = sns.color_palette('Set2', 20)
 
@@ -25,12 +28,11 @@ cluster_colors = [color_palette[x] if x >= 0
 cluster_member_colors = [sns.desaturate(x, p) for x, p in
                          zip(cluster_colors, clusterer.probabilities_)]
 
-# luteo_rmsd_nc = luteo.loc[:, ['rmsd', 'Rg', 'NC', 'nonNC']]
 
-
-features = ['Rg', 'NC']
+features = ['rmsd', 'Rg', 'NC', 'nonNC']
 
 f, axarr = plt.subplots(4, 4)
+
 for feature1 in features:
     for feature2 in features:
         x = features.index(feature1) - 1
