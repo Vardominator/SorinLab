@@ -5,13 +5,16 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{784f5e89-ac6e-45b5-b53d-dbfde093edc3}</ProjectGuid>
     <ProjectHome />
-    <StartupFile>DBSCAN_test.py</StartupFile>
+    <StartupFile>hdbscan_suite.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>.</WorkingDirectory>
     <OutputPath>.</OutputPath>
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId />
+    <CommandLineArguments>8221_io.log</CommandLineArguments>
+    <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
   <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
@@ -19,6 +22,7 @@
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="8221_io.log" />
     <Content Include="ClusteringGeneral\dbscanPlots\dbscanPlot1.png" />
     <Content Include="ClusteringGeneral\dbscanPlots\dbscanPlot10.png" />
     <Content Include="ClusteringGeneral\dbscanPlots\dbscanPlot100.png" />
@@ -431,6 +435,9 @@
     <Compile Include="DataScienceFromScratch\statistics.py" />
     <Compile Include="DataScienceFromScratch\visualizing_data.py" />
     <Compile Include="DBSCAN_test.py" />
+    <Compile Include="hdbscan_suite.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="HDBSCAN_test.py" />
     <Compile Include="SubspaceClustering.py" />
   </ItemGroup>
