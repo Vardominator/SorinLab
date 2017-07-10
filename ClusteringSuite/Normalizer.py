@@ -6,6 +6,15 @@
 
 class Normalizer:
 
+    def __init__(self):
+        self.function_map = {'standard_score': self.StandardScore,
+                             'feature_scale': self.FeatureScale,
+                             'average_constant': self.AverageConstant}
+  
+
+    def Normalize(self, dataframe, method):
+        return self.function_map[method](dataframe)       
+
     def StandardScore(self, dataframe):
         dataframe = (dataframe - dataframe.mean()) / dataframe.std()
         return dataframe

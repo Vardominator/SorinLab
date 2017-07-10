@@ -2,46 +2,56 @@
     Clustering suite launching point
 """
 
-from Partitioner import Partitioner
 from Normalizer import Normalizer
-# from Clustering import DBSCANSession
-
 # from Clustering import KMeansSession, DBSCANSession
 
 import pandas as pd
-
-import os
+import random
 import argparse
 
 parser = argparse.ArgumentParser(
     description='Welcome to the super duper awesome clustering suite!'
 )
 
-parser.add_argument("data", type=str, help="data to be clustered")
+# LOAD DATASET WITH DESIRED SAMPLE SIZE
+parser.add_argument('-d', '--data', type=str, help="data to be clustered")
+parser.add_argument('-s', '--sample', nargs='?', type=int, help="sample size of dataset")
 
+# KMEANS PARAMETERS
+parser.add_argument('-n', '--nclusters', type=int, help="number of clusters for kmeans")
+parser.add_argument('-i', '--init', type=str, help="initialization method of kmeans(random or kmeans++)")
+
+# DBSCAN PARAMETERS
+parser.add_argument("eps", type=float, help="eps radius for core points")
+# DBSCAN & HDBSCAN
+parser.add_argument("min", type=int, help="min number of samples for core points")
+
+# NORMALIZATION
+parser.add_argument('-n', '--norm', nargs='?', type=str, help="normalization method")
+
+## PARTITIONING
+#parser.add_argument("part", type=str, help="partition dictionary")
+
+# SET UP ARGS
 args = parser.parse_args()
-dataframe = pd.read_csv(args.data, sep='\t')
 
-# print(pd.__version__)
+# READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
+dataframe = pd.read_csv(args.data, sep='\s+', header=None)
 
-# dataframe = dataframe.iloc[:, 0:13]
-# dataframe.columns = ["Proj", "Run", "Clone", "Time", "rmsd", "Rg", "S1", "S2", "L1", "L2", "T", "NC", "nonNC"]
 
-# dataframe = dataframe.sample(n=100000)
+if args.sample:
+    dataframe = dataframe.loc[random.sample(list(dataframe.index), args.sample)]
 
-# print(dataframe.tail())
+if args.norm:
+    dataframe = Normalizer().Normalize(dataframe, args.norm)
 
-# test Partitioner class
-partitioner = Partitioner()
-# singleProject = partitioner.selectByProject(dataframe, 1796)
-# singleRun = partitioner.selectByRun(singleProject, 1)
-dataframe = partitioner.selectByTime(dataframe, 600, 50000)
-# print(dataframe.sample(n=100))
 
-cleanedData = partitioner.removeAllBookkeeping(dataframe, remove_native_contacts=False)
-cleanedData = cleanedData.round(3)
+print(dataframe.head())
 
-print(cleanedData.head())
+#partitioner = Partitioner()
+#dataframe = partitioner.selectByTime(dataframe, 600, 50000)
+#cleanedData = partitioner.removeAllBookkeeping(dataframe, remove_native_contacts=False)
+#cleanedData = cleanedData.round(3)
 
 # # test Normalizer class
 # normalizer = Normalizer()
