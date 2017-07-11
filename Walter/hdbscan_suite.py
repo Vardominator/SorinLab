@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from time import gmtime, strftime
+import itertools
 
 '''
 
@@ -41,11 +42,11 @@ data = pd.read_csv(args.data, sep="\s+", header=None)
 # PARTITION COLUMNS OF INTEREST
 if args.frange:
     bounds = list(map(int, args.frange.split(',')))
-    data = data.iloc[:, bounds[0]:(bounds[1] + 1)]
+    partitioned_data = data.iloc[:, bounds[0]:(bounds[1] + 1)]
 
 # RUN HDBSCAN
 clusterer = hdbscan.HDBSCAN(min_cluster_size=args.min)
-cluster_labels = clusterer.fit_predict(data)
+cluster_labels = clusterer.fit_predict(partitioned_data)
 
 color_palette = sns.color_palette('hls', 10)
 cluster_colors = [color_palette[x] if x >= 0
@@ -60,12 +61,12 @@ os.makedirs('RESULTS/{}'.format(result_dir))
 
 # CREATE AND SAVE PLOTS
 plot_cols = list(map(int, args.fplots.split(',')))
-for x in range(0, len(plot_cols)):
-    for y in range(x + 1, len(plot_cols)):
-        colx = plot_cols[0] + x
-        coly = plot_cols[0] + y
-        fig, ax = plt.subplots(1)
-        ax.set_title('{} vs {}'.format(colx, coly))
-        ax.scatter(data.iloc[:, x], data.iloc[:, y], s=50, linewidth=0, c=cluster_colors, alpha=0.25)
-        plot_filename = 'RESULTS/{}/{}_vs_{}.png'.format(result_dir, plot_cols[x], plot_cols[y])
-        fig.savefig(plot_filename)
+
+for pair in list(itertools.combinations(plot_cols, r=2)):
+    x = pair[0]
+    y = pair[1]
+    fig, ax = plt.subplots(1)
+    ax.set_title('{} vs {}'.format(x, y))
+    ax.scatter(data.iloc[:, x], data.iloc[:, y], s=50, linewidth=0, c=cluster_colors, alpha=0.25)
+    plot_filename = 'RESULTS/{}/{}_vs_{}.png'.format(result_dir, x, y)
+    fig.savefig(plot_filename)
