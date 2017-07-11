@@ -60,16 +60,12 @@ os.makedirs('RESULTS/{}'.format(result_dir))
 
 # CREATE AND SAVE PLOTS
 plot_cols = list(map(int, args.fplots.split(',')))
-for x in range(len(plot_cols)):
+for x in range(0, len(plot_cols)):
     for y in range(x + 1, len(plot_cols)):
-        colx = bounds[0] + x
-        coly = bounds[0] + y
+        colx = plot_cols[0] + x
+        coly = plot_cols[0] + y
         fig, ax = plt.subplots(1)
         ax.set_title('{} vs {}'.format(colx, coly))
         ax.scatter(data.iloc[:, x], data.iloc[:, y], s=50, linewidth=0, c=cluster_colors, alpha=0.25)
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        plt.setp(ax.get_xticklabels(), visible=False)
-        plt.setp(ax.get_yticklabels(), visible=False)
-        plot_filename = 'RESULTS/{}/{}_vs_{}.png'.format(result_dir, colx, coly)
+        plot_filename = 'RESULTS/{}/{}_vs_{}.png'.format(result_dir, plot_cols[x], plot_cols[y])
         fig.savefig(plot_filename)
