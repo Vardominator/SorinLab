@@ -1,7 +1,0 @@
-Phil:Salesman:123
-
-Sam:Janitor:122
-Sue:Manager:123
-Mark:Salesman:124BigSexy:Stripper
-BigSexy:Stripper
-BigSexy:Stripper

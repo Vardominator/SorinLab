@@ -2,32 +2,43 @@
     Protein data partitioner
 """
 
+import random
+
 class Partitioner:
 
     # partition data by time
-    def selectByTime(self, dataframe, startTime, endTime):
+    def select_by_time(dataframe, startTime, endTime):
         dataframe = dataframe.loc[dataframe['Time'] >= startTime]
         dataframe = dataframe.loc[dataframe['Time'] <= endTime]
         return dataframe
 
     # select by project
-    def selectByProject(self, dataframe, projectNumber):
+    def select_by_project(dataframe, projectNumber):
         dataframe = dataframe.loc[dataframe['Proj'] == projectNumber]
         return dataframe
 
     # select by run
-    def selectByRun(self, dataframe, runNumber):
+    def select_by_run(dataframe, runNumber):
         dataframe = dataframe.loc[dataframe['Run'] == runNumber]
         return dataframe
 
     # select by clone
-    def selectByClone(self, dataframe, cloneNumber):
+    def select_by_clone(dataframe, cloneNumber):
         dataframe = dataframe.loc[dataframe['Clone'] == cloneNumber]
         return dataframe
 
     # remove all bookkeeping data (project, run, clone, time, and date?) this is necessary for clustering
-    def removeAllBookkeeping(self, dataframe, remove_native_contacts=False):
+    def remove_all_bookkeeping(dataframe, remove_native_contacts=False):
         dataframe = dataframe.iloc[:, 4:]
         if remove_native_contacts:
             dataframe = dataframe.drop('NC', 1)
         return dataframe
+
+    @staticmethod
+    def sample(dataframe, sample_size):
+        return dataframe.loc[random.sample(list(dataframe.index), sample_size)]
+
+    @staticmethod
+    def select_by_column(dataframe, bounds):
+        partitioned_data = dataframe.iloc[:, bounds[0]:(bounds[1] + 1)]
+        return partitioned_data

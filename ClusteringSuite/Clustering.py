@@ -6,6 +6,7 @@ import pandas as pd
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn import metrics
 from scipy.spatial.distance import cdist, pdist
+import hdbscan
 
 # Visualization
 import matplotlib.pyplot as plt
@@ -17,10 +18,10 @@ import time
 
 now = datetime.datetime.now()
 dateTime = str(now.strftime("%Y-%m-%d  %H:%M:%S"))
-dtDirectory = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
+datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 
 # Directory will be determined by the user
-currentDirectory = ""
+current_directory = ""
 
 # Time logged in results file
 startTime = time.time()
@@ -34,8 +35,17 @@ Tasks to complete:
 
 '''
 
+class ClusteringSession(object):
+    def run(self, **kwargs):
+        raise NotImplementedError
+    def save_results(self, location):
+        raise NotImplementedError
+    def save_plots(self, location):
+        raise NotImplementedError
 
-class KMeansSession:
+
+# KMEANS
+class KMeansSession(ClusteringSession):
     def __init__(self, version):
         # version is either 'random' or 'k-means++'
         self.version = version
@@ -48,13 +58,13 @@ class KMeansSession:
         self.n_init = 0
         self.n_jobs = 0
 
-    def Run(self, data, nClusters, nInit=10, nJobs=1):
+    def run(self, data, n_clusters, n_init=10, n_jobs=1):
         self.data = data
-        self.cluster_count = nClusters
-        self.n_init = nInit
-        self.n_jobs = nJobs
+        self.cluster_count = n_clusters
+        self.n_init = n_init
+        self.n_jobs = n_jobs
 
-        kmeans = KMeans(init=self.version, n_clusters=nClusters, n_init=nInit, n_jobs=nJobs)
+        kmeans = KMeans(init=self.version, n_clusters=n_clusters, n_init=n_init, n_jobs=n_jobs)
         self.kmeans = kmeans
     
         kmeans.fit(data)
@@ -65,7 +75,7 @@ class KMeansSession:
         # self.silhouette_score = metrics.silhouette_score(self.data, self.lables, metric='euclidean', sample_size=1000)
 
 
-    def SaveResults(self, location=""):
+    def save_results(self, location=""):
         currentDirectory = location + "RESULTS/KMeans/" + dtDirectory
         os.makedirs(currentDirectory)
 
@@ -85,7 +95,7 @@ class KMeansSession:
         f.close()
 
 
-    def SavePlots(self, location=""):
+    def save_plots(self, location=""):
         # Plots rmsd vs nonNC for now
 
         # step size of the mesh. decrease to increase the quality 
@@ -130,33 +140,35 @@ class KMeansSession:
         # # plt.show()
         plt.savefig(currentDirectory + '/rmsd_vs_NC.png')
 
+
 # DBSCAN
-class DBSCANSession:
+class DBSCANSession(ClusteringSession):
     def __init__(self):
         self.labels = []
-        self.nClusters = 0
+        self.n_clusters = 0
         self.eps = 0
-        self.minSamples = 0
-        self.silhouetteScore = 0
+        self.min_samples = 0
+        self.silhouette_score = 0
         self.data = None
         self.core_samples_mask = None
 
-    def Run(self, data, eps, minSamples):
+    def run(self, data, eps, min_samples):
         self.eps = eps
-        self.minSamples = minSamples
+        self.min_samples = min_samples
         self.data = data
-        db = DBSCAN(eps=eps, min_samples=minSamples).fit(data)
+        db = DBSCAN(eps=eps, min_samples=min_samples).fit(data)
         
         # Used for plotting
         self.core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
         self.core_samples_mask[db.core_sample_indices_] = True
 
         self.labels = db.labels_
-        self.nClusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
+        self.n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
+        print(self.labels)
         # Sample size needs to be adjusted based length of dataset
-        self.silhouetteScore = metrics.silhouette_score(self.data, self.labels, sample_size=2000)
+        #self.silhouette_score = metrics.silhouette_score(self.data, self.labels, sample_size=int(0.2*len(self.data)))
 
-    def SaveResults(self, location=""):
+    def save_results(self, location=""):
         currentDirectory = location + "RESULTS/DBSCAN/" + dtDirectory
         os.makedirs(currentDirectory)
 
@@ -174,8 +186,7 @@ class DBSCANSession:
         f.close()
 
 
-    def SavePlots(self, location=""):
-        
+    def save_plots(self, location=""):
         currentDirectory = location + "RESULTS/DBSCAN/" + dtDirectory
         # Saving plots using scheme from sklearn example
 
@@ -198,6 +209,29 @@ class DBSCANSession:
 
         plt.savefig(currentDirectory + '/rmsd_vs_NC.png')
 
+
+# HDBSCAN
+class HDBSCANSession(ClusteringSession):
+    def __init__(self):
+        self.labels = []
+        self.n_clusters = 0
+        self.min_samples = 0
+        #self.silhouette_score = 0
+        self.data = None
+        #self.core_samples_mask = None
+
+    def run(self, data, min_samples):
+        self.min_samples = min_samples
+        self.data = data
+        hdb = hdbscan.HDBSCAN(min_cluster_size=self.min_samples)
+
+    def save_results(self, location):
+        return super().save_results(location)
+
+    def save_plots(self, location=""):
+        current_directory = location + "RESULTS/HDBSCAN/" + datetime_dir
+        print(current_directory)
+        os.makedirs(current_directory)
 
 
 
