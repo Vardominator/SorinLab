@@ -12,7 +12,7 @@
     <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
     <LaunchProvider>Standard Python launcher</LaunchProvider>
     <InterpreterId />
-    <CommandLineArguments>-d 8221_io.log -s 100 -f 4,9 -c a,b,c,d,e,f -a hdbscan -m 20</CommandLineArguments>
+    <CommandLineArguments>-d Data/8221_io.log -f 5,10 -a hdbscan -r true -m 1,100,2</CommandLineArguments>
     <EnableNativeCodeDebugging>False</EnableNativeCodeDebugging>
     <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>

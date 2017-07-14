@@ -6,6 +6,7 @@ from Normalizer import Normalizer
 from Clustering import KMeansSession, DBSCANSession, HDBSCANSession
 from Partitioner import Partitioner
 
+import numpy as np
 import pandas as pd
 import random
 import argparse
@@ -24,14 +25,17 @@ parser.add_argument('-c', '--colnames', nargs='?', type=str, help="column names"
 # SELECT ALGORITHM
 parser.add_argument('-a', '--alg', type=str, help="algorithm used in clustering")
 
+# FOR USING A RANGE OF PARAMETERS
+parser.add_argument('-r', '--range', nargs='?', default=False, type=bool, help="used to run with a range of parameters with a step size")
+
 # KMEANS PARAMETERS
-parser.add_argument('-n', '--nclusters', nargs='?', type=int, help="number of clusters for kmeans")
+parser.add_argument('-n', '--nclusters', nargs='?', type=str, help="number of clusters for kmeans")
 parser.add_argument('-i', '--init', nargs='?', default='k-means++', type=str, help="initialization method of kmeans(random or k-means++)")
 
 # DBSCAN PARAMETERS
-parser.add_argument('-e', '--eps', nargs='?', type=float, help="eps radius for core points")
+parser.add_argument('-e', '--eps', nargs='?', type=str, help="eps radius for core points")
 # DBSCAN & HDBSCAN
-parser.add_argument('-m', '--min', nargs='?', type=int, help="min number of samples for core points")
+parser.add_argument('-m', '--min', nargs='?', type=str, help="min number of samples for core points")
 
 # NORMALIZATION
 parser.add_argument('-N', '--norm', nargs='?', type=str, help="normalization method")
@@ -64,13 +68,31 @@ if args.alg == 'kmeans':
     kmeans = KMeansSession(args.init)
     kmeans.run(data=dataframe, n_clusters=args.nclusters)
 
-# RUN DBSCAN
-if args.alg == 'dbscan':
-    dbscan = DBSCANSession()
-    dbscan.run(data=dataframe, eps=args.eps, min_samples=args.min)
+# RUN DBSCAN OR HDBSCAN
+if args.alg in ['dbscan', 'hdbscan']:
+    # BOTH ALGORITHMS REQUIRE THE M PARAMETER
+    min_vals = list(map(int, args.min.split(',')))
+    # CHECK IF USING RANGE WITH STEP SIZE
+    if args.range:
+        min_vals = range(min_vals[0], min_vals[1] + min_vals[2], min_vals[2])
 
-# RUN HDBSCAN
-if args.alg == 'hdbscan':
-    hdbscan = HDBSCANSession()
-    hdbscan.run(data=dataframe, min_samples=args.min)
-    hdbscan.save_plots()
+    # ONLY DBSCAN REQUIRES EPS PARAMETER
+    if args.alg == 'dbscan':
+        print(args.alg)
+        eps_vals = list(map(float, args.eps.split(',')))
+        if args.range:
+            eps_vals = np.arange(eps_vals[0], eps_vals[1] + eps_vals[2], eps_vals[2])
+
+        # RUN DBSCAN WITH ALL EPS AND M PARAMETER COMBINATIONS
+        for min_val in min_vals:
+            for eps_val in eps_vals:
+                dbscan = DBSCANSession()
+                results = dbscan.run(data=dataframe, eps=eps_val, min_samples=min_val)
+                print('eps = {}; m = {}; sil = {}'.format(eps_val, min_val, results))
+    
+    # RUN HDBSCAN WITH ALL M PARAMETERS
+    else:
+        for min_val in min_vals:
+            hdbscan = HDBSCANSession()
+            results = hdbscan.run(data=dataframe, min_samples=min_val)
+            print('m = {}; sil = {}'.format(min_val, results))

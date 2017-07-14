@@ -1,11 +1,9 @@
 # Data
 import numpy as np
-import pandas as pd
 
 # Intelligence
 from sklearn.cluster import KMeans, DBSCAN
 from sklearn import metrics
-from scipy.spatial.distance import cdist, pdist
 import hdbscan
 
 # Visualization
@@ -26,15 +24,7 @@ current_directory = ""
 # Time logged in results file
 startTime = time.time()
 
-
-'''
-Tasks to complete:
-
-    1. Exception handling for desired location
-
-
-'''
-
+# CLUSTERING INTERFACE
 class ClusteringSession(object):
     def run(self, **kwargs):
         raise NotImplementedError
@@ -70,9 +60,9 @@ class KMeansSession(ClusteringSession):
         kmeans.fit(data)
         self.cluster_centers = kmeans.cluster_centers_
         self.labels = kmeans.labels_
-
-        print(self.labels)
-        # self.silhouette_score = metrics.silhouette_score(self.data, self.lables, metric='euclidean', sample_size=1000)
+        print(int(len(self.data)*0.2))
+        #print(self.labels)
+        self.silhouette_score = metrics.silhouette_score(self.data, self.lables, metric='euclidean', sample_size=20)
 
 
     def save_results(self, location=""):
@@ -164,9 +154,12 @@ class DBSCANSession(ClusteringSession):
 
         self.labels = db.labels_
         self.n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
-        print(self.labels)
-        # Sample size needs to be adjusted based length of dataset
-        #self.silhouette_score = metrics.silhouette_score(self.data, self.labels, sample_size=int(0.2*len(self.data)))
+        try:
+            self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean')
+        except :
+            self.silhouette_score = -1
+        
+        return self.silhouette_score
 
     def save_results(self, location=""):
         currentDirectory = location + "RESULTS/DBSCAN/" + dtDirectory
@@ -216,7 +209,7 @@ class HDBSCANSession(ClusteringSession):
         self.labels = []
         self.n_clusters = 0
         self.min_samples = 0
-        #self.silhouette_score = 0
+        self.silhouette_score = 0
         self.data = None
         #self.core_samples_mask = None
 
@@ -224,6 +217,15 @@ class HDBSCANSession(ClusteringSession):
         self.min_samples = min_samples
         self.data = data
         hdb = hdbscan.HDBSCAN(min_cluster_size=self.min_samples)
+
+        try:
+            labels = hdb.fit_predict(data)
+            self.silhouette_score = metrics.silhouette_score(data, labels, metric='euclidean')
+        except :
+            self.silhouette_score = -1
+        
+        return self.silhouette_score
+
 
     def save_results(self, location):
         return super().save_results(location)
