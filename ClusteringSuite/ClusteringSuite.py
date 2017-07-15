@@ -115,7 +115,8 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
 
 
 # PRINT FINAL RESULTS
-print(final_results)
+# print(final_results)
 
 for alg in final_results.keys():
-    print(alg)
+    best_params = max(final_results[alg], key=lambda x:x['sil_score'])
+    print('{}: {}'.format(alg, best_params))
