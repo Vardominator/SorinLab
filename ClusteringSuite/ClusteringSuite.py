@@ -11,6 +11,11 @@ import pandas as pd
 import random
 import argparse
 
+import datetime
+import os
+import time
+import json
+
 parser = argparse.ArgumentParser(
     description='Welcome to the super duper awesome clustering suite!'
 )
@@ -20,7 +25,9 @@ parser.add_argument('-d', '--data', type=str, help="data to be clustered")
 parser.add_argument('-s', '--sample', nargs='?', type=int, help="sample size of dataset")
 parser.add_argument('-f', '--frange', nargs='?', type=str, help="features to be cluster")
 parser.add_argument('-p', '--fplots', nargs='?', type=str, help="clustered features to be plotted")
-parser.add_argument('-c', '--colnames', nargs='?', type=str, help="column names")
+parser.add_argument('-c', '--cnames', nargs='?', type=str, help="feature column names")
+# add argument for simple results vs detailed results
+# parser.add_argument('-')
 
 # SELECT ALGORITHM
 parser.add_argument('-a', '--algs', type=str, help="algorithms used in clustering")
@@ -43,8 +50,12 @@ parser.add_argument('-N', '--norm', nargs='?', type=str, help="normalization met
 # SET UP ARGS
 args = parser.parse_args()
 
+# STARTING TIME
+start_time = time.time()
+
 # READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
 dataframe = pd.read_csv(args.data, sep='\s+', header=None)
+
 
 # SAMPLE DATASET
 if args.sample:
@@ -56,7 +67,7 @@ if args.frange:
     dataframe = Partitioner().select_by_column(dataframe, bounds)
 
 # SET COLUMN NAMES
-if args.colnames:
+if args.cnames:
     dataframe.columns = args.colnames.split(',')
 
 # NORMALIZE DATASET
@@ -66,7 +77,9 @@ if args.norm:
 
 algs = args.algs.split(',')
 final_results = {}
-
+min_vals = []
+eps_vals = []
+n_clusters_vals = []
 
 # RUN KMEANS
 if 'kmeans' in algs:
@@ -114,9 +127,54 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
             final_results['hdbscan'].append(results)
 
 
-# PRINT FINAL RESULTS
-# print(final_results)
+# ENDTIME
+end_time = time.time()
 
-for alg in final_results.keys():
-    best_params = max(final_results[alg], key=lambda x:x['sil_score'])
-    print('{}: {}'.format(alg, best_params))
+
+# CREATE MAIN RESULTS DIRECTORY IF ONE DOES EXIST
+if not os.path.exists('RESULTS'):
+    os.makedirs('RESULTS')
+
+# CREATE DIRECTORY FOR NEW RUN
+now = datetime.datetime.now()
+datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
+current_directory = "RESULTS/" + datetime_dir
+os.makedirs(current_directory)
+
+with open(current_directory + '/summary.txt', 'w') as f:
+
+    # PRINT FINAL RESULTS
+    f.write('CLUSTERING SUMMARY:\n\n')
+
+    now_formatted = str(now.strftime("%Y-%m-%d  %H:%M:%S"))
+    f.write('DATE & TIME COMPLETED: {}\n'.format(now_formatted))
+    f.write('TIME ELAPSED: {}s\n\n'.format(int(end_time - start_time)))
+
+    filename = args.data.split('/')[-1]
+    f.write('PREVIEW OF {}: \n\n'.format(filename))
+    f.write(str(Partitioner().sample(dataframe, 10)))
+    f.write('\n\n\n')
+
+
+    f.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
+    for alg in final_results.keys():
+
+        f.write('PARAMETERS CHOSEN FOR {}:\n\n'.format(alg))
+        if alg in ['hdbscan', 'dbscan']:
+            f.write('min samples(m): \n{}'.format('\n'.join([str(m) for m in list(min_vals)])))
+            if alg is 'dbscan':
+                f.write('eps(e): \n{}'.format('\n'.join([str(eps) for eps in list(eps_vals)])))
+        
+        if alg is 'kmeans':
+            f.write('n clusters(n): \n{}'.format('\n'.join([str(n) for n in list(n_clusters_vals)])))
+        
+
+        best_params = max(final_results[alg], key=lambda x:x['sil_score'])
+        f.write('\n\nPARAMETERS OF {} WITH BEST SILHOUETTE SCORE: \n\n'.format(alg))
+        for item in sorted(best_params):
+            f.write('{}: {}\n'.format(item, best_params[item]))
+
+        f.write('\n\n\n')
+        # best_params = max(final_results[alg], key=lambda x:x['sil_score'])
+        # print('{}: {}'.format(alg, best_params))
+
