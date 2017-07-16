@@ -58,7 +58,14 @@ class KMeansSession(ClusteringSession):
         kmeans.fit(data)
         self.cluster_centers = kmeans.cluster_centers_
         self.labels = kmeans.labels_
-        self.silhouette_score = metrics.silhouette_score(self.data, self.labels, metric='euclidean')
+
+        sample_size = 0
+        if len(data) >= 20000:
+            sample_size = 20000
+        else:
+            sample_size = len(data)
+        self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
+        
         return {'sil_score': self.silhouette_score,
                 'n_clusters': self.n_clusters,
                 'labels': self.labels.tolist()}        
@@ -87,10 +94,13 @@ class DBSCANSession(ClusteringSession):
 
         self.labels = db.labels_
         self.n_clusters = len(set(self.labels)) - (1 if -1 in self.labels else 0)
-        try:
-            self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean')
-        except :
-            self.silhouette_score = -1
+
+        sample_size = 0
+        if len(data) >= 20000:
+            sample_size = 20000
+        else:
+            sample_size = len(data)
+        self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
         
         return {'sil_score': self.silhouette_score,
                 'min_samples': self.min_samples,

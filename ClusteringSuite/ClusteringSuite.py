@@ -97,7 +97,6 @@ best_results = []
 if 'kmeans' in algs:
     kmeans = KMeansSession(args.init)
 
-    print('Running kmeans...')
     n_clusters_vals = list(map(int, args.nclusters.split(',')))
 
     if args.range:
@@ -105,6 +104,7 @@ if 'kmeans' in algs:
 
     final_results['kmeans'] = []
     for n_clusters in n_clusters_vals:
+        print('Running kmeans with n_clusters = {} ...'.format(n_clusters))
         results = kmeans.run(data=dataframe, n_clusters=n_clusters)
         final_results['kmeans'].append(results)
 
@@ -119,7 +119,6 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
 
     # ONLY DBSCAN REQUIRES EPS PARAMETER
     if 'dbscan' in algs:
-        print('Running DBSCAN...')
         final_results['dbscan'] = []
         eps_vals = list(map(float, args.eps.split(',')))
         if args.range:
@@ -129,15 +128,16 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
         for min_val in min_vals:
             for eps_val in eps_vals:
                 dbscan = DBSCANSession()
+                print('Running DBSCAN with min_samples = {} and eps = {}...'.format(min_val, eps_val))
                 results = dbscan.run(data=dataframe, eps=eps_val, min_samples=min_val)
                 final_results['dbscan'].append(results)
 
     # RUN HDBSCAN WITH ALL M PARAMETERS
     if 'hdbscan' in algs:
-        print('Running HDBSCAN...')
         final_results['hdbscan'] = []
         for min_val in min_vals:
             hdbscan = HDBSCANSession()
+            print('Running HDBSCAN with min_samples = {}...'.format(min_val))
             results = hdbscan.run(data=dataframe, min_samples=min_val)
             final_results['hdbscan'].append(results)
 
