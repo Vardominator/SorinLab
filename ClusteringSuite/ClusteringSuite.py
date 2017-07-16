@@ -169,8 +169,8 @@ with open(current_directory + '/summary.txt', 'w') as summary:
     filename = args.data.split('/')[-1]
     summary.write('PREVIEW OF {}: \n\n'.format(filename))
     summary.write(str(Partitioner().sample(dataframe, 10)))
+    summary.write('\n\nSAMPLE SIZE: {}'.format(args.sample))
     summary.write('\n\n\n')
-
 
     summary.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
     for alg in final_results.keys():
