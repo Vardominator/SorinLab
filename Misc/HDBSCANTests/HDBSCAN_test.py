@@ -6,18 +6,18 @@ from sklearn.datasets import make_blobs
 from sklearn.cluster import KMeans, DBSCAN
 
 
-luteo = pd.read_csv('luteo_10000_sample.csv')
+luteo = pd.read_csv('luteo_200000_sample.csv')
 print(len(luteo))
 # print(luteo.columns.values)
 
 # HDBSCAN
-# clusterer = hdbscan.HDBSCAN(min_cluster_size=500)
+clusterer = hdbscan.HDBSCAN(min_cluster_size=500)
 
 # DBSCAN
 # clusterer = DBSCAN(eps=0.3, min_samples=500)
 
 # Kmeans
-clusterer = KMeans(init='k-means++', n_clusters=8, n_jobs=1)
+# clusterer = KMeans(init='k-means++', n_clusters=8, n_jobs=1)
 
 cluster_labels = clusterer.fit_predict(luteo)
 

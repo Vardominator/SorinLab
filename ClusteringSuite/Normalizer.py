@@ -4,30 +4,26 @@
     source: https://en.wikipedia.org/wiki/Normalization_(statistics)
 """
 
-class Normalizer:
+def Normalize(dataframe, method):
+    return function_map[method](dataframe)       
 
-    def __init__(self):
-        self.function_map = {'standard_score': self.StandardScore,
-                             'feature_scale': self.FeatureScale,
-                             'average_constant': self.AverageConstant}
-  
+def standard_score(dataframe):
+    dataframe = (dataframe - dataframe.mean()) / dataframe.std()
+    return dataframe
 
-    def Normalize(self, dataframe, method):
-        return self.function_map[method](dataframe)       
+def feature_scale(dataframe):
+    dataframe = (dataframe - dataframe.min()) / (dataframe.max() - dataframe.min())
+    return dataframe
 
-    def StandardScore(self, dataframe):
-        dataframe = (dataframe - dataframe.mean()) / dataframe.std()
-        return dataframe
+def average_constant(dataframe):
+    dataframe = dataframe / dataframe.mean()
+    return dataframe
 
-    def FeatureScale(self, dataframe):
-        dataframe = (dataframe - dataframe.min()) / (dataframe.max() - dataframe.min())
-        return dataframe
+def average_constant_special(dataframe, L2Thresh, TertiaryThresh):
+    dataframe = dataframe.loc[dataframe['L2'] > L2Thresh and dataframe['T'] > TertiaryThresh]
+    dataframe = dataframe.mean()
+    return dataframe
 
-    def AverageConstant(self, dataframe):
-        dataframe = dataframe / dataframe.mean()
-        return dataframe
-
-    def AverageConstantSpecial(self, dataframe, L2Thresh, TertiaryThresh):
-        dataframe = dataframe.loc[dataframe['L2'] > L2Thresh and dataframe['T'] > TertiaryThresh]
-        dataframe = dataframe.mean()
-        return dataframe
+function_map = {'standard_score': standard_score,
+                        'feature_scale': feature_scale,
+                        'average_constant': average_constant}

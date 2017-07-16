@@ -2,15 +2,23 @@
     Clustering suite launching point
 """
 
-from Normalizer import Normalizer
+# HELPER CLASSES
+import Normalizer as norm
 from Clustering import KMeansSession, DBSCANSession, HDBSCANSession
 from Partitioner import Partitioner
 
+# DATA PROCESSING & MANIPULATION
 import numpy as np
 import pandas as pd
+import itertools
+
+# VISUALIZATION
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# MISC
 import random
 import argparse
-
 import datetime
 import os
 import time
@@ -26,8 +34,7 @@ parser.add_argument('-s', '--sample', nargs='?', type=int, help="sample size of 
 parser.add_argument('-f', '--frange', nargs='?', type=str, help="features to be cluster")
 parser.add_argument('-p', '--fplots', nargs='?', type=str, help="clustered features to be plotted")
 parser.add_argument('-c', '--cnames', nargs='?', type=str, help="feature column names")
-# add argument for simple results vs detailed results
-# parser.add_argument('-')
+parser.add_argument('-b', '--best', nargs='?', default=1, type=int, help="number of best results to save")
 
 # SELECT ALGORITHM
 parser.add_argument('-a', '--algs', type=str, help="algorithms used in clustering")
@@ -54,12 +61,15 @@ args = parser.parse_args()
 start_time = time.time()
 
 # READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
-dataframe = pd.read_csv(args.data, sep='\s+', header=None)
+dataframe_og = pd.read_csv(args.data, sep='\s+', header=None)
 
+print('Data loaded!')
+print('Clustering initiating...')
 
 # SAMPLE DATASET
 if args.sample:
-    dataframe = Partitioner().sample(dataframe, args.sample)
+    dataframe = Partitioner().sample(dataframe_og, args.sample)
+
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
@@ -72,7 +82,7 @@ if args.cnames:
 
 # NORMALIZE DATASET
 if args.norm:
-    dataframe = Normalizer().Normalize(dataframe, args.norm)
+    dataframe = norm.Normalize(dataframe, args.norm)
 
 
 algs = args.algs.split(',')
@@ -80,11 +90,14 @@ final_results = {}
 min_vals = []
 eps_vals = []
 n_clusters_vals = []
+best_results = []
+
 
 # RUN KMEANS
 if 'kmeans' in algs:
     kmeans = KMeansSession(args.init)
 
+    print('Running kmeans...')
     n_clusters_vals = list(map(int, args.nclusters.split(',')))
 
     if args.range:
@@ -106,6 +119,7 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
 
     # ONLY DBSCAN REQUIRES EPS PARAMETER
     if 'dbscan' in algs:
+        print('Running DBSCAN...')
         final_results['dbscan'] = []
         eps_vals = list(map(float, args.eps.split(',')))
         if args.range:
@@ -120,6 +134,7 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
 
     # RUN HDBSCAN WITH ALL M PARAMETERS
     if 'hdbscan' in algs:
+        print('Running HDBSCAN...')
         final_results['hdbscan'] = []
         for min_val in min_vals:
             hdbscan = HDBSCANSession()
@@ -130,6 +145,7 @@ if any(x in ['hdbscan', 'dbscan'] for x in algs):
 # ENDTIME
 end_time = time.time()
 
+print('Integrating results...')
 
 # CREATE MAIN RESULTS DIRECTORY IF ONE DOES EXIST
 if not os.path.exists('RESULTS'):
@@ -141,40 +157,76 @@ datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 current_directory = "RESULTS/" + datetime_dir
 os.makedirs(current_directory)
 
-with open(current_directory + '/summary.txt', 'w') as f:
+with open(current_directory + '/summary.txt', 'w') as summary:
 
     # PRINT FINAL RESULTS
-    f.write('CLUSTERING SUMMARY:\n\n')
+    summary.write('CLUSTERING SUMMARY:\n\n')
 
     now_formatted = str(now.strftime("%Y-%m-%d  %H:%M:%S"))
-    f.write('DATE & TIME COMPLETED: {}\n'.format(now_formatted))
-    f.write('TIME ELAPSED: {}s\n\n'.format(int(end_time - start_time)))
+    summary.write('DATE & TIME COMPLETED: {}\n'.format(now_formatted))
+    summary.write('TIME ELAPSED: {}s\n\n'.format(int(end_time - start_time)))
 
     filename = args.data.split('/')[-1]
-    f.write('PREVIEW OF {}: \n\n'.format(filename))
-    f.write(str(Partitioner().sample(dataframe, 10)))
-    f.write('\n\n\n')
+    summary.write('PREVIEW OF {}: \n\n'.format(filename))
+    summary.write(str(Partitioner().sample(dataframe, 10)))
+    summary.write('\n\n\n')
 
 
-    f.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
+    summary.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
     for alg in final_results.keys():
 
-        f.write('PARAMETERS CHOSEN FOR {}:\n\n'.format(alg))
+        # CREATE ALGORITHM DIRECTORY
+        os.makedirs(current_directory + '/{}'.format(alg))
+
+        summary.write('PARAMETERS CHOSEN FOR {}:\n\n'.format(alg))
         if alg in ['hdbscan', 'dbscan']:
-            f.write('min samples(m): \n{}'.format('\n'.join([str(m) for m in list(min_vals)])))
+            summary.write('min samples(m): \n{}'.format('\n'.join([str(m) for m in list(min_vals)])))
             if alg is 'dbscan':
-                f.write('eps(e): \n{}'.format('\n'.join([str(eps) for eps in list(eps_vals)])))
+                summary.write('eps(e): \n{}'.format('\n'.join([str(eps) for eps in list(eps_vals)])))
         
         if alg is 'kmeans':
-            f.write('n clusters(n): \n{}'.format('\n'.join([str(n) for n in list(n_clusters_vals)])))
+            summary.write('n clusters(n): \n{}'.format('\n'.join([str(n) for n in list(n_clusters_vals)])))
         
 
         best_params = max(final_results[alg], key=lambda x:x['sil_score'])
-        f.write('\n\nPARAMETERS OF {} WITH BEST SILHOUETTE SCORE: \n\n'.format(alg))
+        best_params['algorithm'] = alg
+        best_results.append(best_params)
+
+        if args.range:
+            summary.write('\n\nPARAMETERS OF {} WITH BEST SILHOUETTE SCORE: \n\n'.format(alg))
+        else:
+            summary.write('\n\nSILHOUETTE SCORE: \n\n')
+
         for item in sorted(best_params):
-            f.write('{}: {}\n'.format(item, best_params[item]))
+            if item not in ['labels']:
+                summary.write('{}: {}\n'.format(item, best_params[item]))
 
-        f.write('\n\n\n')
-        # best_params = max(final_results[alg], key=lambda x:x['sil_score'])
-        # print('{}: {}'.format(alg, best_params))
+        summary.write('\n\n\n')
 
+
+# CREATE RESULTS JSON
+with open(current_directory + '/results.json', 'w') as j:
+    j.write(json.dumps(final_results, sort_keys=True, indent=4))
+
+
+# CREATE PLOTS FOR BEST RESULTS
+print('Creating plots...')
+for best_result in best_results:
+    color_palette = sns.color_palette('hls', 50)
+    cluster_colors = [color_palette[x] if x >= 0
+                      else (0.0, 0.0, 0.0)
+                      for x in best_result['labels']]
+
+    for pair in list(itertools.combinations(list(range(bounds[0], bounds[1] + 1)), r = 2)):
+        x = pair[0] - bounds[0]
+        y = pair[1] - bounds[0]
+        fig, ax = plt.subplots(1)
+        ax.set_title('{} vs {}'.format(x + bounds[0], y + bounds[0]))
+        ax.scatter(dataframe.iloc[:, x], dataframe.iloc[:, y], s=50, linewidth=0,c=cluster_colors, alpha=0.25)
+        plot_filename = '{}/{}/{}_vs_{}.png'.format(current_directory, best_result['algorithm'], x + bounds[0], y + bounds[0])
+        fig.savefig(plot_filename)
+        fig.clf()
+
+
+print('Completed!')
+print('Results stored in {}/{}/'.format(os.getcwd(), current_directory))
