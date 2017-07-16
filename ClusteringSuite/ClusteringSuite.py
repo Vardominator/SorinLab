@@ -169,7 +169,7 @@ with open(current_directory + '/summary.txt', 'w') as summary:
     filename = args.data.split('/')[-1]
     summary.write('PREVIEW OF {}: \n\n'.format(filename))
     summary.write(str(Partitioner().sample(dataframe, 10)))
-    summary.write('\n\nSAMPLE SIZE: {}'.format(args.sample))
+    summary.write('\n\n\nSAMPLE SIZE: {}'.format(args.sample))
     summary.write('\n\n\n')
 
     summary.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
@@ -198,7 +198,7 @@ with open(current_directory + '/summary.txt', 'w') as summary:
             summary.write('\n\nSILHOUETTE SCORE: \n\n')
 
         for item in sorted(best_params):
-            if item not in ['labels']:
+            if item not in ['labels', 'algorithm']:
                 summary.write('{}: {}\n'.format(item, best_params[item]))
 
         summary.write('\n\n\n')
@@ -222,7 +222,7 @@ for best_result in best_results:
         y = pair[1] - bounds[0]
         fig, ax = plt.subplots(1)
         ax.set_title('{} vs {}'.format(x + bounds[0], y + bounds[0]))
-        ax.scatter(dataframe.iloc[:, x], dataframe.iloc[:, y], s=50, linewidth=0,c=cluster_colors, alpha=0.25)
+        ax.scatter(dataframe.iloc[:, x], dataframe.iloc[:, y], s=50, linewidth=0,c=cluster_colors, alpha=0.80)
         plot_filename = '{}/{}/{}_vs_{}.png'.format(current_directory, best_result['algorithm'], x + bounds[0], y + bounds[0])
         fig.savefig(plot_filename)
         fig.clf()
