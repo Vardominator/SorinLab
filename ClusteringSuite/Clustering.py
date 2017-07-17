@@ -7,7 +7,7 @@ from sklearn import metrics
 import hdbscan
 
 # Visualization
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # System
 import datetime
