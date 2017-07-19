@@ -36,6 +36,31 @@ import os
 import time
 import json
 
+# HELPERS
+def labels_to_colors(labels):
+    return [color_palette[x] if x >= 0 else (0.0, 0.0, 0.0) for x in labels]
+
+def result_to_dirname(alg, result):
+    if alg is 'kmeans':
+        cur_dir = 'n-{}'.format(result['n_clusters'])
+    elif alg is 'hdbscan':
+        cur_dir = 'm-{}_n-{}'.format(result['min_samples'], result['n_clusters'])
+    elif alg is 'dbscan':
+        cur_dir = 'm-{}_e-{}_n-{}'.format(result['min_samples'], result['eps'], result['n_clusters'])
+    return alg + '/' + cur_dir
+
+def create_plots(dataframe, bounds, run_dir):
+    for pair in list(itertools.combinations(bounds, r = 2)):
+        x = pair[0] - bounds[0]
+        y = pair[1] - bounds[0]
+        fig, ax = plt.subplots(1)
+        ax.set_title('{} vs {}'.format(x + bounds[0], y + bounds[0]))
+        ax.scatter(dataframe.iloc[:, x], dataframe.iloc[:, y], s=50, linewidth=0,c=cluster_colors, alpha=0.80)
+        plot_filename = '{}/{}_vs_{}.png'.format(run_dir, x + bounds[0], y + bounds[0])
+        fig.savefig(plot_filename)
+        fig.clf()    
+
+
 parser = argparse.ArgumentParser(
     description='Welcome to the super duper awesome clustering suite!'
 )
@@ -46,7 +71,11 @@ parser.add_argument('-s', '--sample', nargs='?', type=int, help="sample size of 
 parser.add_argument('-f', '--frange', nargs='?', type=str, help="features to be cluster")
 parser.add_argument('-p', '--fplots', nargs='?', type=str, help="clustered features to be plotted")
 parser.add_argument('-c', '--cnames', nargs='?', type=str, help="feature column names")
-parser.add_argument('-b', '--best', nargs='?', default=1, type=int, help="number of best results to save")
+parser.add_argument('-b', '--best', nargs='?', default=False, type=bool, help="report only best results")
+parser.add_argument('-s', '--stats', default=1, type=int, help="number of runs for statistical assessment")
+
+# NORMALIZATION
+parser.add_argument('-N', '--norm', nargs='?', type=str, help="normalization method and columns to be normalized")
 
 # SELECT ALGORITHM
 parser.add_argument('-a', '--algs', type=str, help="algorithms used in clustering")
@@ -62,9 +91,6 @@ parser.add_argument('-i', '--init', nargs='?', default='k-means++', type=str, he
 parser.add_argument('-e', '--eps', nargs='?', type=str, help="eps radius for core points")
 # DBSCAN & HDBSCAN
 parser.add_argument('-m', '--min', nargs='?', type=str, help="min number of samples for core points")
-
-# NORMALIZATION
-parser.add_argument('-N', '--norm', nargs='?', type=str, help="normalization method")
 
 # SET UP ARGS
 args = parser.parse_args()
@@ -82,6 +108,11 @@ print('Clustering initiating...')
 if args.sample:
     dataframe = Partitioner().sample(dataframe_og, args.sample)
 
+# NORMALIZE DATASET
+if args.norm:
+    norm_cols_str = args.norm.split(',')
+    norm_cols = list(map(int, norm_cols_str[1:]))
+    dataframe = norm.Normalize(dataframe, norm_cols_str[0], norm_cols)
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
@@ -92,18 +123,12 @@ if args.frange:
 if args.cnames:
     dataframe.columns = args.colnames.split(',')
 
-# NORMALIZE DATASET
-if args.norm:
-    dataframe = norm.Normalize(dataframe, args.norm)
-
-
 algs = args.algs.split(',')
 final_results = {}
 min_vals = []
 eps_vals = []
 n_clusters_vals = []
 best_results = []
-
 
 # RUN KMEANS
 if 'kmeans' in algs:
@@ -169,6 +194,7 @@ datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 current_directory = "RESULTS/" + datetime_dir
 os.makedirs(current_directory)
 
+
 with open(current_directory + '/summary.txt', 'w') as summary:
 
     # PRINT FINAL RESULTS
@@ -185,35 +211,43 @@ with open(current_directory + '/summary.txt', 'w') as summary:
     summary.write('\n\n\n')
 
     summary.write('METHODS USED: {}\n\n\n'.format(', '.join(algs)))
+
     for alg in final_results.keys():
 
         # CREATE ALGORITHM DIRECTORY
-        os.makedirs(current_directory + '/{}'.format(alg))
+        alg_dir = current_directory + '/{}'.format(alg)
+        os.makedirs(alg_dir)
 
         summary.write('PARAMETERS CHOSEN FOR {}:\n\n'.format(alg))
         if alg in ['hdbscan', 'dbscan']:
             summary.write('min samples(m): \n{}'.format('\n'.join([str(m) for m in list(min_vals)])))
             if alg is 'dbscan':
                 summary.write('eps(e): \n{}'.format('\n'.join([str(eps) for eps in list(eps_vals)])))
-        
+
         if alg is 'kmeans':
             summary.write('n clusters(n): \n{}'.format('\n'.join([str(n) for n in list(n_clusters_vals)])))
         
+        if args.best is True:
+            best_params = max(final_results[alg], key=lambda x:x['sil_score'])
+            best_params['algorithm'] = alg
+            best_results.append(best_params)
 
-        best_params = max(final_results[alg], key=lambda x:x['sil_score'])
-        best_params['algorithm'] = alg
-        best_results.append(best_params)
+            if args.range:
+                summary.write('\n\nPARAMETERS OF {} WITH BEST SILHOUETTE SCORE: \n\n'.format(alg))
+            else:
+                summary.write('\n\nSILHOUETTE SCORE: \n\n')
 
-        if args.range:
-            summary.write('\n\nPARAMETERS OF {} WITH BEST SILHOUETTE SCORE: \n\n'.format(alg))
+            for item in sorted(best_params):
+                if item not in ['labels', 'algorithm']:
+                    summary.write('{}: {}\n'.format(item, best_params[item]))
+
         else:
-            summary.write('\n\nSILHOUETTE SCORE: \n\n')
-
-        for item in sorted(best_params):
-            if item not in ['labels', 'algorithm']:
-                summary.write('{}: {}\n'.format(item, best_params[item]))
+            for result in final_results[alg]:
+                run_dir = current_directory + '/' + result_to_dirname(alg, result)
+                os.makedirs(run_dir)
 
         summary.write('\n\n\n')
+
 
 
 # CREATE RESULTS JSON
@@ -223,22 +257,26 @@ with open(current_directory + '/results.json', 'w') as j:
 
 # CREATE PLOTS FOR BEST RESULTS
 print('Creating plots...')
-for best_result in best_results:
-    color_palette = sns.color_palette('hls', 50)
-    cluster_colors = [color_palette[x] if x >= 0
-                      else (0.0, 0.0, 0.0)
-                      for x in best_result['labels']]
 
-    for pair in list(itertools.combinations(list(range(bounds[0], bounds[1] + 1)), r = 2)):
-        x = pair[0] - bounds[0]
-        y = pair[1] - bounds[0]
-        fig, ax = plt.subplots(1)
-        ax.set_title('{} vs {}'.format(x + bounds[0], y + bounds[0]))
-        ax.scatter(dataframe.iloc[:, x], dataframe.iloc[:, y], s=50, linewidth=0,c=cluster_colors, alpha=0.80)
-        plot_filename = '{}/{}/{}_vs_{}.png'.format(current_directory, best_result['algorithm'], x + bounds[0], y + bounds[0])
-        fig.savefig(plot_filename)
-        fig.clf()
+if args.fplots:
+    bounds = list(map(int, args.fplots.split(',')))
+else:
+    bounds = list(range(bounds[0], bounds[1] + 1))
 
+color_palette = sns.color_palette('hls', 100)
+
+if args.best is True:
+    for best_result in best_results:
+        cluster_colors = labels_to_colors(best_result['labels']) 
+        run_dir = current_directory + '/' + best_result['algorithm']
+        create_plots(dataframe, bounds, run_dir)
+
+else:
+    for alg in final_results.keys():
+        for result in final_results[alg]:
+            cluster_colors = labels_to_colors(result['labels'])
+            run_dir = current_directory + '/' + result_to_dirname(alg, result)
+            create_plots(dataframe, bounds, run_dir)
 
 print('Completed!')
 print('Results stored in {}/{}/'.format(os.getcwd(), current_directory))

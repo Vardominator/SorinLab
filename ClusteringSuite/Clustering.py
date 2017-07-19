@@ -68,7 +68,8 @@ class KMeansSession(ClusteringSession):
         
         return {'sil_score': self.silhouette_score,
                 'n_clusters': self.n_clusters,
-                'labels': self.labels.tolist()}        
+                'labels': self.labels.tolist(),
+                'n_clusters': self.n_clusters}        
 
 
 # DBSCAN
@@ -105,7 +106,8 @@ class DBSCANSession(ClusteringSession):
         return {'sil_score': self.silhouette_score,
                 'min_samples': self.min_samples,
                 'eps': self.eps,
-                'labels': self.labels.tolist()}
+                'labels': self.labels.tolist(),
+                'n_clusters': self.n_clusters}
 
 
 # HDBSCAN
@@ -115,6 +117,7 @@ class HDBSCANSession(ClusteringSession):
         self.min_samples = 0
         self.silhouette_score = 0
         self.data = None
+        self.n_clusters = 0
         #self.core_samples_mask = None
 
     def run(self, data, min_samples):
@@ -122,6 +125,7 @@ class HDBSCANSession(ClusteringSession):
         self.data = data
         hdb = hdbscan.HDBSCAN(min_cluster_size=self.min_samples)
         self.labels = hdb.fit_predict(data)
+        self.n_clusters = len(set(self.labels)) - 1
 
         sample_size = 0
         if len(data) >= 20000:
@@ -132,7 +136,8 @@ class HDBSCANSession(ClusteringSession):
         
         return {'sil_score': self.silhouette_score,
                 'min_samples': self.min_samples,
-                'labels': self.labels.tolist()}
+                'labels': self.labels.tolist(),
+                'n_clusters': self.n_clusters}
 
 
     def save_results(self, location):

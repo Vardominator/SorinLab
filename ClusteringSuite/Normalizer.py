@@ -4,18 +4,18 @@
     source: https://en.wikipedia.org/wiki/Normalization_(statistics)
 """
 
-def Normalize(dataframe, method):
-    return function_map[method](dataframe)       
+def Normalize(dataframe, method, cols):
+    return function_map[method](dataframe, cols)       
 
-def standard_score(dataframe):
+def standard_score(dataframe, cols):
     dataframe = (dataframe - dataframe.mean()) / dataframe.std()
     return dataframe
 
-def feature_scale(dataframe):
-    dataframe = (dataframe - dataframe.min()) / (dataframe.max() - dataframe.min())
+def feature_scale(dataframe, cols):
+    dataframe.iloc[:, cols] = (dataframe.iloc[:, cols] - dataframe.iloc[:, cols].min()) / (dataframe.iloc[:, cols].max() - dataframe.iloc[:, cols].min())
     return dataframe
 
-def average_constant(dataframe):
+def average_constant(dataframe, cols):
     dataframe = dataframe / dataframe.mean()
     return dataframe
 
