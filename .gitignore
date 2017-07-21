@@ -300,3 +300,4 @@ __pycache__/
 
 # VARDERES
 RESULTS/
+*.pyc
