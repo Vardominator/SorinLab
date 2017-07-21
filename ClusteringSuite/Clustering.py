@@ -21,10 +21,9 @@ datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 # Directory will be determined by the user
 current_directory = ""
 
-
 # CLUSTERING INTERFACE
 class ClusteringSession(object):
-    def run(self, **kwargs):
+    def run(self, params):
         raise NotImplementedError
     def save_results(self, location):
         raise NotImplementedError
@@ -34,9 +33,7 @@ class ClusteringSession(object):
 
 # KMEANS
 class KMeansSession(ClusteringSession):
-    def __init__(self, version):
-        # version is either 'random' or 'k-means++'
-        self.version = version
+    def __init__(self):
         self.n_clusters = 0
         self.data = None
         self.kmeans = None
@@ -46,13 +43,11 @@ class KMeansSession(ClusteringSession):
         self.n_init = 0
         self.n_jobs = 0
 
-    def run(self, data, n_clusters, n_init=10, n_jobs=1):
+    def run(self, data, params):
         self.data = data
-        self.n_clusters = n_clusters
-        self.n_init = n_init
-        self.n_jobs = n_jobs
+        self.n_clusters = int(params['nclusters'])
 
-        kmeans = KMeans(init=self.version, n_clusters=n_clusters, n_init=n_init, n_jobs=n_jobs)
+        kmeans = KMeans(n_clusters=self.n_clusters)
         self.kmeans = kmeans
     
         kmeans.fit(data)
@@ -83,11 +78,11 @@ class DBSCANSession(ClusteringSession):
         self.data = None
         self.core_samples_mask = None
 
-    def run(self, data, eps, min_samples):
-        self.eps = eps
-        self.min_samples = min_samples
+    def run(self, data, params):
+        self.eps = float(params['eps'])
+        self.min_samples = int(params['min'])
         self.data = data
-        db = DBSCAN(eps=eps, min_samples=min_samples).fit(data)
+        db = DBSCAN(eps=self.eps, min_samples=self.min_samples).fit(data)
         
         # Used for plotting
         self.core_samples_mask = np.zeros_like(db.labels_, dtype=bool)
@@ -119,14 +114,14 @@ class HDBSCANSession(ClusteringSession):
         self.data = None
         self.n_clusters = 0
         #self.core_samples_mask = None
-
-    def run(self, data, min_samples):
-        self.min_samples = min_samples
+    
+    def run(self, data, params):
+        self.min_samples = int(params['min'])
         self.data = data
         hdb = hdbscan.HDBSCAN(min_cluster_size=self.min_samples)
         self.labels = hdb.fit_predict(data)
         self.n_clusters = len(set(self.labels)) - 1
-
+        
         sample_size = 0
         if len(data) >= 20000:
             sample_size = 20000
@@ -147,3 +142,17 @@ class HDBSCANSession(ClusteringSession):
         current_directory = location + "RESULTS/HDBSCAN/" + datetime_dir
         print(current_directory)
         os.makedirs(current_directory)
+
+
+# CLUSTER SESSION DICT
+SESSION_MAP = {
+    'kmeans': KMeansSession,
+    'hdbscan': HDBSCANSession,
+    'dbscan': DBSCANSession
+}
+
+PARAMS_MAP = {
+    'kmeans': ['nclusters'],
+    'hdbscan': ['min'],
+    'dbscan': ['min', 'eps']
+}
