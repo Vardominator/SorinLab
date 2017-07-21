@@ -131,7 +131,7 @@ class HDBSCANSession(ClusteringSession):
         
         return {'sil_score': self.silhouette_score,
                 'min_samples': self.min_samples,
-                'labels': self.labels.tolist(),
+                # 'labels': self.labels.tolist(),
                 'n_clusters': self.n_clusters}
 
 

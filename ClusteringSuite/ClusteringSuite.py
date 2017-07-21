@@ -40,16 +40,6 @@ import json
 def labels_to_colors(labels):
     return [color_palette[x] if x >= 0 else (0.0, 0.0, 0.0) for x in labels]
 
-# HELPER: RETURNS PARAMETER DIRNAME GIVEN ALGORITHM
-def result_to_dirname(alg, result):
-    if alg is 'kmeans':
-        cur_dir = 'n-{}'.format(result['n_clusters'])
-    elif alg is 'hdbscan':
-        cur_dir = 'm-{}_n-{}'.format(result['min_samples'], result['n_clusters'])
-    elif alg is 'dbscan':
-        cur_dir = 'm-{}_e-{}_n-{}'.format(result['min_samples'], result['eps'], result['n_clusters'])
-    return alg + '/' + cur_dir
-
 # HELPER: CREATES PLOTS GIVEN DATA
 def create_plots(dataframe, bounds, run_dir, cluster_colors):
     for pair in list(itertools.combinations(bounds, r = 2)):
@@ -127,21 +117,32 @@ if args.cnames:
     dataframe.columns = args.colnames.split(',')
 
 algs = args.algs.split(',')
-final_results = {}
-min_vals = []
-eps_vals = []
-n_clusters_vals = []
+now = datetime.datetime.now()
+final_results = {'runs': [], 'datetime': str(now), 'algorithms': algs}
 best_results = []
-
+current_dir = ''
 
 # CREATE MAIN RESULTS DIRECTORY IF ONE DOES EXIST
 if not os.path.exists('RESULTS'):
     os.makedirs('RESULTS')
 
+# CREATE DATA TIME DIRECTORY
+datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
+current_dir = 'RESULTS/{}'.format(datetime_dir)
+os.makedirs(current_dir)
+
 # BEGIN RUNS
 for run in range(1,args.stats + 1):
     print('Current run: {}\n'.format(run))
+    run_dir = current_dir + '/RUN_{}'.format(run)
+    os.makedirs(run_dir)
+
     for alg in algs:
+        # current_run = {'algorithm': alg, 'results': {}}
+
+        # CREATE ALGORITHM DIRECTORY
+        if not os.path.exists('{}/{}'.format(run_dir, alg)):
+            os.makedirs('{}/{}'.format(run_dir, alg))
 
         # RETRIEVE AND EXTRACT PARAMETER ARGUMENTS
         session = SESSION_MAP[alg]()
@@ -175,60 +176,20 @@ for run in range(1,args.stats + 1):
                 params_dict = {params[0]: param_vals}
 
             print('\tRunning {} with the following parameters: {}...'.format(alg, params_dict))
+
+            param_dir = run_dir + '/{}/{}'.format(alg, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
+            os.mkdir(param_dir)
+            
             results = session.run(dataframe, params_dict)
-
-        # for n_run in args.stats:
-        
-            # # RUN KMEANS
-            # if 'kmeans' in algs:
-            #     kmeans = KMeansSession(args.init)
-
-            #     n_clusters_vals = list(map(int, args.nclusters.split(',')))
-            #     if args.range:
-            #         n_clusters_vals = range(n_clusters_vals[0], n_clusters_vals[1] + n_clusters_vals[2], n_clusters_vals[2])
-
-            #     final_results['kmeans'] = []
-            #     for n_clusters in n_clusters_vals:
-            #         print('Running kmeans with n_clusters = {} ...'.format(n_clusters))
-            #         results = kmeans.run(data=dataframe, n_clusters=n_clusters)
-            #         final_results['kmeans'].append(results)
-
-
-            # # RUN DBSCAN OR HDBSCAN
-            # if any(x in ['hdbscan', 'dbscan'] for x in algs):
-            #     # BOTH ALGORITHMS REQUIRE THE M PARAMETER
-            #     min_vals = list(map(int, args.min.split(',')))
-            #     # CHECK IF USING RANGE WITH STEP SIZE
-            #     if args.range:
-            #         min_vals = range(min_vals[0], min_vals[1] + min_vals[2], min_vals[2])
-
-            #     # ONLY DBSCAN REQUIRES EPS PARAMETER
-            #     if 'dbscan' in algs:
-            #         final_results['dbscan'] = []
-            #         eps_vals = list(map(float, args.eps.split(',')))
-            #         if args.range:
-            #             eps_vals = np.arange(eps_vals[0], eps_vals[1] + eps_vals[2], eps_vals[2])
-
-            #         # RUN DBSCAN WITH ALL EPS AND M PARAMETER COMBINATIONS
-            #         for min_val in min_vals:
-            #             for eps_val in eps_vals:
-            #                 dbscan = DBSCANSession()
-            #                 print('Running DBSCAN with min_samples = {} and eps = {}...'.format(min_val, eps_val))
-            #                 results = dbscan.run(data=dataframe, eps=eps_val, min_samples=min_val)
-            #                 final_results['dbscan'].append(results)
-
-            #     # RUN HDBSCAN WITH ALL M PARAMETERS
-            #     if 'hdbscan' in algs:
-            #         final_results['hdbscan'] = []
-            #         for min_val in min_vals:
-            #             hdbscan = HDBSCANSession()
-            #             print('Running HDBSCAN with min_samples = {}...'.format(min_val))
-            #             results = hdbscan.run(data=dataframe, min_samples=min_val)
-            #             final_results['hdbscan'].append(results)
+            
+            current_run = {'algorithm': alg, 'parameters':params_dict, 'results': results}
+            final_results['runs'].append(current_run)
 
 
 
-
+# CREATE RESULTS JSON
+with open(current_dir + '/results.json', 'w') as j:
+    j.write(json.dumps(final_results, sort_keys=True, indent=4))
 
 # # ENDTIME
 # end_time = time.time()
