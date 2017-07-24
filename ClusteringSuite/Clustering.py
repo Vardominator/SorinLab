@@ -62,7 +62,6 @@ class KMeansSession(ClusteringSession):
         self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
         
         return {'sil_score': self.silhouette_score,
-                'n_clusters': self.n_clusters,
                 'labels': self.labels.tolist(),
                 'n_clusters': self.n_clusters}        
 
@@ -99,8 +98,6 @@ class DBSCANSession(ClusteringSession):
         self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
         
         return {'sil_score': self.silhouette_score,
-                'min_samples': self.min_samples,
-                'eps': self.eps,
                 'labels': self.labels.tolist(),
                 'n_clusters': self.n_clusters}
 
@@ -130,8 +127,6 @@ class HDBSCANSession(ClusteringSession):
         self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
         
         return {'sil_score': self.silhouette_score,
-                'min_samples': self.min_samples,
-                # 'labels': self.labels.tolist(),
                 'n_clusters': self.n_clusters}
 
 

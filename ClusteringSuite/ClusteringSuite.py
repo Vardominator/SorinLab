@@ -23,6 +23,7 @@ from Partitioner import Partitioner
 import numpy as np
 import pandas as pd
 import itertools
+import statistics as stat
 
 # VISUALIZATION
 import matplotlib.pyplot as plt
@@ -117,8 +118,10 @@ if args.cnames:
     dataframe.columns = args.colnames.split(',')
 
 algs = args.algs.split(',')
+algs_dict = dict.fromkeys(algs, {'runs': []})
 now = datetime.datetime.now()
-final_results = {'runs': [], 'datetime': str(now), 'algorithms': algs}
+final_results = {'datetime': str(now), 'algorithms': algs_dict}
+print(final_results)
 best_results = []
 current_dir = ''
 
@@ -131,41 +134,41 @@ datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 current_dir = 'RESULTS/{}'.format(datetime_dir)
 os.makedirs(current_dir)
 
-# BEGIN RUNS
-for run in range(1,args.stats + 1):
-    print('Current run: {}\n'.format(run))
-    run_dir = current_dir + '/RUN_{}'.format(run)
-    os.makedirs(run_dir)
+for alg in algs:
+    # current_run = {'algorithm': alg, 'results': {}}
+    alg_dir = '{}/{}'.format(current_dir, alg)
+    # CREATE ALGORITHM DIRECTORY
+    if not os.path.exists(alg_dir):
+        os.makedirs(alg_dir)
 
-    for alg in algs:
-        # current_run = {'algorithm': alg, 'results': {}}
+    # RETRIEVE AND EXTRACT PARAMETER ARGUMENTS
+    session = SESSION_MAP[alg]()
+    params = PARAMS_MAP[alg]
+    # print(params)
+    param_args = [args_dict[param] for param in params]
 
-        # CREATE ALGORITHM DIRECTORY
-        if not os.path.exists('{}/{}'.format(run_dir, alg)):
-            os.makedirs('{}/{}'.format(run_dir, alg))
+    # CREATE PARAMETERS LISTS FROM ARGUMENTS
+    curr_alg_vals = []
+    for param_arg in param_args:
+        vals = list(map(float, param_arg.split(',')))
+        if args.range:
+            vals = np.arange(vals[0], vals[1] + vals[2], vals[2])
+        curr_alg_vals.append(list(vals))
 
-        # RETRIEVE AND EXTRACT PARAMETER ARGUMENTS
-        session = SESSION_MAP[alg]()
-        params = PARAMS_MAP[alg]
-        # print(params)
-        param_args = [args_dict[param] for param in params]
+    # CREATE PARAMETER COMBINATIONS FOR ALGS WITH MULTIPLE PARAMS
+    if len(curr_alg_vals) > 1:
+        curr_alg_combos = []
+        for param_comb in itertools.product(*curr_alg_vals):
+            curr_alg_combos.append(list(param_comb))
+        curr_alg_vals = curr_alg_combos
+    else:
+        curr_alg_vals = curr_alg_vals[0]
 
-        # CREATE PARAMETERS LISTS FROM ARGUMENTS
-        curr_alg_vals = []
-        for param_arg in param_args:
-            vals = list(map(float, param_arg.split(',')))
-            if args.range:
-                vals = np.arange(vals[0], vals[1] + vals[2], vals[2])
-            curr_alg_vals.append(list(vals))
-
-        # CREATE PARAMETER COMBINATIONS FOR ALGS WITH MULTIPLE PARAMS
-        if len(curr_alg_vals) > 1:
-            curr_alg_combos = []
-            for param_comb in itertools.product(*curr_alg_vals):
-                curr_alg_combos.append(list(param_comb))
-            curr_alg_vals = curr_alg_combos
-        else:
-            curr_alg_vals = curr_alg_vals[0]
+    # MULTIPLE RUNS OF ALGORITHM
+    for run in range(1,args.stats + 1):
+        print('Current run: {}\n'.format(run))
+        run_dir = alg_dir + '/RUN_{}'.format(run)
+        os.makedirs(run_dir)
 
         # RUN ALGORITHM FOR EACH PARAMETER COMBINATION
         for param_vals in curr_alg_vals:
@@ -175,21 +178,39 @@ for run in range(1,args.stats + 1):
             else:
                 params_dict = {params[0]: param_vals}
 
-            print('\tRunning {} with the following parameters: {}...'.format(alg, params_dict))
+            print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
 
-            param_dir = run_dir + '/{}/{}'.format(alg, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
+            param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
             os.mkdir(param_dir)
             
             results = session.run(dataframe, params_dict)
             
-            current_run = {'algorithm': alg, 'parameters':params_dict, 'results': results}
-            final_results['runs'].append(current_run)
+            current_run = {'parameters':params_dict, 'results': results}
+            final_results['algorithms'][alg]['runs'].append(current_run)
 
 
 
 # CREATE RESULTS JSON
 with open(current_dir + '/results.json', 'w') as j:
     j.write(json.dumps(final_results, sort_keys=True, indent=4))
+
+#best_params = max(final_results[alg], key=lambda x:x['sil_score'])
+
+hdbscan_runs = final_results['algorithms']['hdbscan']['runs']
+stats = {}
+results_tuples = [tuple([tuple(run['parameters'].values()), run['results']['n_clusters']]) for run in hdbscan_runs]
+
+
+# EXTRACT PARAMETERS
+param_set = {x[0] for x in results_tuples}
+n_cluster_res = [(i, [x[1] for x in results_tuples if set(x[0]) == set(i)]) for i in param_set]
+print(n_cluster_res)
+n_cluster_stds = [(res[0], np.std(res[1])) for res in n_cluster_res]
+n_cluster_stds = sorted(n_cluster_stds, key=lambda x:x[1])
+print(n_cluster_stds)
+# n_cluster_stds = tuple(dict((x[0], x) for x in n_cluster_stds).values())
+# print(n_cluster_stds)
+
 
 # # ENDTIME
 # end_time = time.time()
