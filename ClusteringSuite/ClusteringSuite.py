@@ -64,6 +64,7 @@ parser.add_argument('-s', '--sample', nargs='?', type=int, help="sample size of 
 parser.add_argument('-f', '--frange', nargs='?', type=str, help="features to be cluster")
 parser.add_argument('-p', '--fplots', nargs='?', type=str, help="clustered features to be plotted")
 parser.add_argument('-c', '--cnames', nargs='?', type=str, help="feature column names")
+parser.add_argument('-P', '--part', nargs='?', type=str, help="partition by feature column and respective range")
 parser.add_argument('-b', '--best', nargs='?', default=False, type=bool, help="report only best results")
 parser.add_argument('-S', '--stats', default=1, type=int, help="number of runs for statistical assessment")
 
@@ -104,6 +105,14 @@ if args.norm:
     norm_cols_str = args.norm.split(',')
     norm_cols = list(map(int, norm_cols_str[1:]))
     dataframe = norm.Normalize(dataframe, norm_cols_str[0], norm_cols)
+
+# PARTITION BY FEATURE COLUMN AND RESPECTIVE RANGE
+if args.part:
+    partition_arg = args.part.split(',')
+    column = partition_arg[0]
+    rows = list(map(int, partition_arg[1:]))
+    dataframe = Partitioner().select_by_time(dataframe, rows[0], 3)
+    print(dataframe.head())
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
@@ -150,7 +159,7 @@ for alg in algs:
     curr_alg_vals = []
     for param_arg in param_args:
         vals = list(map(float, param_arg.split(',')))
-        if args.range is 'true':
+        if args.range:
             vals = np.arange(vals[0], vals[1] + vals[2], vals[2])
         curr_alg_vals.append(list(vals))
 
@@ -187,6 +196,7 @@ for alg in algs:
             current_run = {'parameters':params_dict, 'results': results}
             final_results['algorithms'][alg]['runs'].append(current_run)
 
+            results = None
 
 
 # ENDING TIME
@@ -209,10 +219,18 @@ results_tuples = [tuple([tuple(run['parameters'].values()), run['results']['n_cl
 # EXTRACT PARAMETERS
 param_set = {x[0] for x in results_tuples}
 n_cluster_res = [(i, [x[1] for x in results_tuples if set(x[0]) == set(i)]) for i in param_set]
-print(n_cluster_res)
+# print(n_cluster_res)
 n_cluster_stds = [(res[0], np.std(res[1])) for res in n_cluster_res]
 n_cluster_stds = sorted(n_cluster_stds, key=lambda x:x[1])
-print(n_cluster_stds)
+# print(n_cluster_stds)
+
+
+with open('hdbscan_results.csv', 'w') as f:
+    f.write('m,n_clusters,std\n')
+    for res in n_cluster_res[::-1]:
+        ix = n_cluster_res.index(res)
+        f.write('{},{},{}\n'.format(res[0][0], res[1][0], n_cluster_stds[ix][1]))
+
 # n_cluster_stds = tuple(dict((x[0], x) for x in n_cluster_stds).values())
 # print(n_cluster_stds)
 

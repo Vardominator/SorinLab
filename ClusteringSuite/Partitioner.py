@@ -6,12 +6,6 @@ import random
 
 class Partitioner:
 
-    # partition data by time
-    def select_by_time(dataframe, startTime, endTime):
-        dataframe = dataframe.loc[dataframe['Time'] >= startTime]
-        dataframe = dataframe.loc[dataframe['Time'] <= endTime]
-        return dataframe
-
     # select by project
     def select_by_project(dataframe, projectNumber):
         dataframe = dataframe.loc[dataframe['Proj'] == projectNumber]
@@ -41,4 +35,15 @@ class Partitioner:
     @staticmethod
     def select_by_column(dataframe, bounds):
         partitioned_data = dataframe.iloc[:, bounds[0]:(bounds[1] + 1)]
+        return partitioned_data
+
+    @staticmethod
+    def select_by_time(dataframe, startime, timecolumn, endtime=1000000):
+        # dataframe = dataframe.loc[dataframe['Time'] >= startTime]
+        # ix = dataframe.index[dataframe[:, timecolumn] >= startime][:]
+        ix_true = dataframe.index[dataframe.iloc[:, timecolumn] > startime]
+        # print(list(ix_true.values))
+        temp_df = dataframe
+        temp_df.columns = list(map(str, range(len(dataframe.iloc[0,:]))))
+        partitioned_data = dataframe.loc[dataframe[str(timecolumn)] >= startime]
         return partitioned_data
