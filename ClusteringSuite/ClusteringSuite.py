@@ -89,9 +89,6 @@ parser.add_argument('-m', '--min', nargs='?', type=str, help="min number of samp
 args = parser.parse_args()
 args_dict = vars(args)
 
-# STARTING TIME
-start_time = time.time()
-
 # READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
 dataframe_og = pd.read_csv(args.data, sep='\s+', header=None)
 
@@ -121,7 +118,6 @@ algs = args.algs.split(',')
 algs_dict = dict.fromkeys(algs, {'runs': []})
 now = datetime.datetime.now()
 final_results = {'datetime': str(now), 'algorithms': algs_dict}
-print(final_results)
 best_results = []
 current_dir = ''
 
@@ -133,6 +129,9 @@ if not os.path.exists('RESULTS'):
 datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
 current_dir = 'RESULTS/{}'.format(datetime_dir)
 os.makedirs(current_dir)
+
+# STARTING TIME
+start_time = time.time()
 
 for alg in algs:
     # current_run = {'algorithm': alg, 'results': {}}
@@ -151,7 +150,7 @@ for alg in algs:
     curr_alg_vals = []
     for param_arg in param_args:
         vals = list(map(float, param_arg.split(',')))
-        if args.range:
+        if args.range is 'true':
             vals = np.arange(vals[0], vals[1] + vals[2], vals[2])
         curr_alg_vals.append(list(vals))
 
@@ -190,6 +189,12 @@ for alg in algs:
 
 
 
+# ENDING TIME
+end_time = time.time()
+
+# RECORD ELAPSED TIME
+final_results['elapsed'] = '{}s'.format(int(end_time - start_time))
+
 # CREATE RESULTS JSON
 with open(current_dir + '/results.json', 'w') as j:
     j.write(json.dumps(final_results, sort_keys=True, indent=4))
@@ -212,8 +217,6 @@ print(n_cluster_stds)
 # print(n_cluster_stds)
 
 
-# # ENDTIME
-# end_time = time.time()
 
 # print('Integrating results...')
 
