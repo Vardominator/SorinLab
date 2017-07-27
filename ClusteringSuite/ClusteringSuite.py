@@ -16,7 +16,7 @@
 
 # HELPER CLASSES
 import Normalizer as norm
-from Clustering import SESSION_MAP, PARAMS_MAP
+import Clustering
 from Partitioner import Partitioner
 
 # DATA PROCESSING & MANIPULATION
@@ -30,12 +30,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # MISC
-import random
+import random as rand
 import argparse
 import datetime
 import os
 import time
 import json
+import importlib as imp
+import sys
+
+sys.dont_write_bytecode = True
+
 
 # HELPER: CONVERTS LABEL ASSIGNMENTS TO COLORS
 def labels_to_colors(labels):
@@ -150,8 +155,8 @@ for alg in algs:
         os.makedirs(alg_dir)
 
     # RETRIEVE AND EXTRACT PARAMETER ARGUMENTS
-    session = SESSION_MAP[alg]()
-    params = PARAMS_MAP[alg]
+    session = Clustering.SESSION_MAP[alg]()
+    params = Clustering.PARAMS_MAP[alg]
     # print(params)
     param_args = [args_dict[param] for param in params]
 
@@ -172,31 +177,30 @@ for alg in algs:
     else:
         curr_alg_vals = curr_alg_vals[0]
 
-    # MULTIPLE RUNS OF ALGORITHM
-    for run in range(1,args.stats + 1):
-        print('Current run: {}\n'.format(run))
-        run_dir = alg_dir + '/RUN_{}'.format(run)
-        os.makedirs(run_dir)
+    # # MULTIPLE RUNS OF ALGORITHM
+    # for run in range(1,args.stats + 1):
+    #     print('Current run: {}\n'.format(run))
+    #     run_dir = alg_dir + '/RUN_{}'.format(run)
+    #     os.makedirs(run_dir)
 
-        # RUN ALGORITHM FOR EACH PARAMETER COMBINATION
-        for param_vals in curr_alg_vals:
-            params_dict = {}
-            if type(param_vals) is list:
-                params_dict = dict(zip(params, param_vals))
-            else:
-                params_dict = {params[0]: param_vals}
+    # RUN ALGORITHM FOR EACH PARAMETER COMBINATION
+    for param_vals in curr_alg_vals:
+        params_dict = {}
+        if type(param_vals) is list:
+            params_dict = dict(zip(params, param_vals))
+        else:
+            params_dict = {params[0]: param_vals}
 
-            print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
+        print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
 
-            param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
-            os.mkdir(param_dir)
-            
-            results = session.run(dataframe, params_dict)
-            
-            current_run = {'parameters':params_dict, 'results': results}
-            final_results['algorithms'][alg]['runs'].append(current_run)
-
-            results = None
+        # param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
+        # os.mkdir(param_dir)
+        
+        results = session.run(dataframe, params_dict)
+        print(results['n_clusters'])
+        current_run = {'parameters':params_dict, 'results': results}
+        final_results['algorithms'][alg]['runs'].append(current_run)
+        del results
 
 
 # ENDING TIME
@@ -209,7 +213,6 @@ final_results['elapsed'] = '{}s'.format(int(end_time - start_time))
 with open(current_dir + '/results.json', 'w') as j:
     j.write(json.dumps(final_results, sort_keys=True, indent=4))
 
-#best_params = max(final_results[alg], key=lambda x:x['sil_score'])
 
 hdbscan_runs = final_results['algorithms']['hdbscan']['runs']
 stats = {}
@@ -222,14 +225,17 @@ n_cluster_res = [(i, [x[1] for x in results_tuples if set(x[0]) == set(i)]) for 
 # print(n_cluster_res)
 n_cluster_stds = [(res[0], np.std(res[1])) for res in n_cluster_res]
 n_cluster_stds = sorted(n_cluster_stds, key=lambda x:x[1])
-# print(n_cluster_stds)
 
 
-with open('hdbscan_results.csv', 'w') as f:
-    f.write('m,n_clusters,std\n')
-    for res in n_cluster_res[::-1]:
-        ix = n_cluster_res.index(res)
-        f.write('{},{},{}\n'.format(res[0][0], res[1][0], n_cluster_stds[ix][1]))
+
+n_clus = [run['results']['n_clusters'] for run in hdbscan_runs]
+print(n_clus)
+
+with open('hdbscan_results.csv', 'a') as f:
+    # f.write('m,n_clusters,std\n')
+    # for res in n_cluster_res[::-1]:
+    #     ix = n_cluster_res.index(res)
+    f.write('{}\n'.format(','.join(list(map(str, n_clus)))))
 
 # n_cluster_stds = tuple(dict((x[0], x) for x in n_cluster_stds).values())
 # print(n_cluster_stds)

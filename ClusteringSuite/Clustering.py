@@ -13,6 +13,12 @@ import hdbscan
 import datetime
 import os
 import time
+import sys
+import importlib as imp
+import random as rand
+import shutil
+
+sys.dont_write_bytecode = True
 
 now = datetime.datetime.now()
 dateTime = str(now.strftime("%Y-%m-%d  %H:%M:%S"))
@@ -60,7 +66,7 @@ class KMeansSession(ClusteringSession):
         else:
             sample_size = len(data)
         self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
-        
+
         return {'sil_score': self.silhouette_score,
                 'labels': self.labels.tolist(),
                 'n_clusters': self.n_clusters}        
@@ -115,7 +121,9 @@ class HDBSCANSession(ClusteringSession):
     def run(self, data, params):
         self.min_samples = int(params['min'])
         self.data = data
-        hdb = hdbscan.HDBSCAN(min_cluster_size=self.min_samples)
+
+        hdb = hdbscan.HDBSCAN(min_samples=self.min_samples)
+        # print(hdb)
         self.labels = hdb.fit_predict(data)
         self.n_clusters = len(set(self.labels)) - 1
         
@@ -125,6 +133,8 @@ class HDBSCANSession(ClusteringSession):
         else:
             sample_size = len(data)
         self.silhouette_score = metrics.silhouette_score(data, self.labels, metric='euclidean', sample_size=sample_size)
+
+        del hdb
         
         return {'sil_score': self.silhouette_score,
                 'n_clusters': self.n_clusters}
