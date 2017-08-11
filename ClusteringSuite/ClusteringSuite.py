@@ -100,7 +100,7 @@ dataframe_og = pd.read_csv(args.data, sep='\s+', header=None)
 
 print('Data loaded!')
 print('Clustering initiating...')
-
+print(len(dataframe_og))
 # SAMPLE DATASET
 if args.sample:
     dataframe = Partitioner().sample(dataframe_og, args.sample)
@@ -117,7 +117,7 @@ if args.part:
     column = partition_arg[0]
     rows = list(map(int, partition_arg[1:]))
     dataframe = Partitioner().select_by_time(dataframe, rows[0], 3)
-    print(dataframe.head())
+    print(len(dataframe))
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
