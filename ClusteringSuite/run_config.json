@@ -1,25 +1,25 @@
 {
-    "runs": 50,
+    "runs": 5,
     "data": "../Data/luteo-1796-1798.txt",
 
     "partition":{
-        "partition_column": 3,
-        "partition_range": 6000
+        "column": 3,
+        "range": 10000
     },
 
-    "sample_size": 100000,
+    "sample": 10000,
     
-    "normalization":{
+    "norm":{
         "method": "feature_scale",
-        "columns": [4,5]
+        "columns":[4,5]
     },
 
-    "column_range":[4,12],
-    "plot_columns":[4,5,6,7],
+    "range":[4,12],
+    "plot_cols":[4,5,6,7],
     "algorithms":["hdbscan"],
 
     "parameters":{
         "range": true,
-        "values": [300,1000,100]
+        "values":[30,100,10]
     }
 }

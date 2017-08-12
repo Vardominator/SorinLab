@@ -98,9 +98,9 @@ args_dict = vars(args)
 # READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
 dataframe_og = pd.read_csv(args.data, sep='\s+', header=None)
 
-print('Data loaded!')
-print('Clustering initiating...')
-print(len(dataframe_og))
+# print('Data loaded!')
+# print('Clustering initiating...')
+# print(len(dataframe_og))
 # SAMPLE DATASET
 if args.sample:
     dataframe = Partitioner().sample(dataframe_og, args.sample)
@@ -117,7 +117,7 @@ if args.part:
     column = partition_arg[0]
     rows = list(map(int, partition_arg[1:]))
     dataframe = Partitioner().select_by_time(dataframe, rows[0], 3)
-    print(len(dataframe))
+    # print(len(dataframe))
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
@@ -191,13 +191,13 @@ for alg in algs:
         else:
             params_dict = {params[0]: param_vals}
 
-        print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
+        # print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
 
         # param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
         # os.mkdir(param_dir)
         
         results = session.run(dataframe, params_dict)
-        print(results['n_clusters'])
+        # print(results['n_clusters'])
         current_run = {'parameters':params_dict, 'results': results}
         final_results['algorithms'][alg]['runs'].append(current_run)
         del results
