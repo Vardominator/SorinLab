@@ -38,7 +38,7 @@ with open(current_directory + '/hdbscan_multirun_results.csv', 'a') as f:
     for run in range(config['runs']):
         proc = subprocess.Popen([
             'python3',
-            'ClusteringSuite.py',
+            'clustering_suite.py',
             '-d',
             str(config['data']),
             '-P',
@@ -56,7 +56,9 @@ with open(current_directory + '/hdbscan_multirun_results.csv', 'a') as f:
             '-r',
             str(config['parameters']['range']),
             '-m',
-            ','.join([str(x) for x in config['parameters']['min']])
+            ','.join([str(x) for x in config['parameters']['min']]),
+            '-t',
+            str(config['threads'])
         ], stdout=subprocess.PIPE)
 
         n_clusters = str(proc.stdout.readline().rstrip(), 'utf-8')

@@ -91,6 +91,9 @@ parser.add_argument('-e', '--eps', nargs='?', type=str, help="eps radius for cor
 # DBSCAN & HDBSCAN
 parser.add_argument('-m', '--min', nargs='?', type=str, help="min number of samples for core points")
 
+# THREADS
+parser.add_argument('-t', '--threads', nargs='?', default=4, type=int, help="number of threads to use")
+
 # SET UP ARGS
 args = parser.parse_args()
 args_dict = vars(args)
@@ -117,7 +120,7 @@ if args.part:
     column = partition_arg[0]
     rows = list(map(int, partition_arg[1:]))
     dataframe = Partitioner().select_by_time(dataframe, rows[0], int(column))
-    print(len(dataframe))
+    # print(len(dataframe))
 
 # SELECT COLUMNS TO BE CLUSTERED
 if args.frange:
@@ -196,7 +199,7 @@ for alg in algs:
         # param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
         # os.mkdir(param_dir)
         
-        results = session.run(dataframe, params_dict)
+        results = session.run(dataframe, params_dict, args.threads)
         # print(results['n_clusters'])
         current_run = {'parameters':params_dict, 'results': results}
         final_results['algorithms'][alg]['runs'].append(current_run)

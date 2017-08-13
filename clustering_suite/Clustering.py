@@ -29,7 +29,7 @@ current_directory = ""
 
 # CLUSTERING INTERFACE
 class ClusteringSession(object):
-    def run(self, params):
+    def run(self, params, threads):
         raise NotImplementedError
     def save_results(self, location):
         raise NotImplementedError
@@ -49,7 +49,7 @@ class KMeansSession(ClusteringSession):
         self.n_init = 0
         self.n_jobs = 0
 
-    def run(self, data, params):
+    def run(self, data, params, threads):
         self.data = data
         self.n_clusters = int(params['nclusters'])
 
@@ -83,7 +83,7 @@ class DBSCANSession(ClusteringSession):
         self.data = None
         self.core_samples_mask = None
 
-    def run(self, data, params):
+    def run(self, data, params, threads):
         self.eps = float(params['eps'])
         self.min_samples = int(params['min'])
         self.data = data
@@ -118,11 +118,11 @@ class HDBSCANSession(ClusteringSession):
         self.n_clusters = 0
         #self.core_samples_mask = None
     
-    def run(self, data, params):
+    def run(self, data, params, threads):
         self.min_samples = int(params['min'])
         self.data = data
 
-        hdb = hdbscan.HDBSCAN(min_samples=self.min_samples)
+        hdb = hdbscan.HDBSCAN(min_samples=self.min_samples, core_dist_n_jobs=threads)
         # print(hdb)
         self.labels = hdb.fit_predict(data)
         self.n_clusters = len(set(self.labels)) - 1

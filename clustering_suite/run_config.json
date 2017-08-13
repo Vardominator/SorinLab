@@ -1,6 +1,6 @@
 {
     "runs": 50,
-    "data": "../Data/luteo-1796-1798.txt",
+    "data": "../data/luteo-1796-1798.txt",
 
     "partition":{
         "column": 3,
@@ -21,5 +21,7 @@
     "parameters":{
         "range": true,
         "min":[100,1000,100]
-    }
+    },
+
+    "threads":8
 }
