@@ -96,14 +96,14 @@ args = parser.parse_args()
 args_dict = vars(args)
 
 # READ DATASET WITH ARBITRARY AMOUNT OF ARGUMENTS
-dataframe_og = pd.read_csv(args.data, sep='\s+', header=None)
+dataframe = pd.read_csv(args.data, sep='\s+', header=None)
 
 # print('Data loaded!')
 # print('Clustering initiating...')
 # print(len(dataframe_og))
 # SAMPLE DATASET
-if args.sample:
-    dataframe = Partitioner().sample(dataframe_og, args.sample)
+if args.sample > 0:
+    dataframe = Partitioner().sample(dataframe, args.sample)
 
 # NORMALIZE DATASET
 if args.norm:
@@ -116,7 +116,7 @@ if args.part:
     partition_arg = args.part.split(',')
     column = partition_arg[0]
     rows = list(map(int, partition_arg[1:]))
-    dataframe = Partitioner().select_by_time(dataframe, rows[0], 3)
+    dataframe = Partitioner().select_by_time(dataframe, rows[0], int(column))
     # print(len(dataframe))
 
 # SELECT COLUMNS TO BE CLUSTERED
@@ -135,14 +135,14 @@ final_results = {'datetime': str(now), 'algorithms': algs_dict}
 best_results = []
 current_dir = ''
 
-# CREATE MAIN RESULTS DIRECTORY IF ONE DOES EXIST
-if not os.path.exists('RESULTS'):
-    os.makedirs('RESULTS')
+# # CREATE MAIN RESULTS DIRECTORY IF ONE DOES EXIST
+# if not os.path.exists('RESULTS'):
+#     os.makedirs('RESULTS')
 
-# CREATE DATA TIME DIRECTORY
-datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
-current_dir = 'RESULTS/{}'.format(datetime_dir)
-os.makedirs(current_dir)
+# # CREATE DATA TIME DIRECTORY
+# datetime_dir = str(now.strftime("%Y-%m-%d__%H-%M-%S"))
+# current_dir = 'RESULTS/{}'.format(datetime_dir)
+# os.makedirs(current_dir)
 
 # STARTING TIME
 start_time = time.time()
@@ -151,8 +151,8 @@ for alg in algs:
     # current_run = {'algorithm': alg, 'results': {}}
     alg_dir = '{}/{}'.format(current_dir, alg)
     # CREATE ALGORITHM DIRECTORY
-    if not os.path.exists(alg_dir):
-        os.makedirs(alg_dir)
+    # if not os.path.exists(alg_dir):
+    #     os.makedirs(alg_dir)
 
     # RETRIEVE AND EXTRACT PARAMETER ARGUMENTS
     session = Clustering.SESSION_MAP[alg]()
@@ -210,8 +210,8 @@ end_time = time.time()
 final_results['elapsed'] = '{}s'.format(int(end_time - start_time))
 
 # CREATE RESULTS JSON
-with open(current_dir + '/results.json', 'w') as j:
-    j.write(json.dumps(final_results, sort_keys=True, indent=4))
+# with open(current_dir + '/results.json', 'w') as j:
+#     j.write(json.dumps(final_results, sort_keys=True, indent=4))
 
 
 hdbscan_runs = final_results['algorithms']['hdbscan']['runs']
@@ -229,7 +229,7 @@ n_cluster_stds = sorted(n_cluster_stds, key=lambda x:x[1])
 
 
 n_clus = [run['results']['n_clusters'] for run in hdbscan_runs]
-print(n_clus)
+print(','.join([str(n) for n in n_clus]))
 
 with open('hdbscan_results.csv', 'a') as f:
     # f.write('m,n_clusters,std\n')
