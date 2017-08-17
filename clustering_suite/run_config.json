@@ -7,7 +7,7 @@
         "range": 6000
     },
 
-    "sample": 1100000,
+    "sample": 200000,
     
     "norm":{
         "method": "feature_scale",
@@ -23,5 +23,5 @@
         "min":[100,1000,100]
     },
 
-    "threads":8
+    "threads":16
 }

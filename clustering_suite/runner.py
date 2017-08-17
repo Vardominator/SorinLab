@@ -34,37 +34,38 @@ if 'hdbscan' in config['algorithms']:
 
 
 # RUN SUBPROCESSES AND WRITE TO FILE
-with open(current_directory + '/hdbscan_multirun_results.csv', 'a') as f:
-    for run in range(config['runs']):
-        proc = subprocess.Popen([
-            'python3',
-            'clustering_suite.py',
-            '-d',
-            str(config['data']),
-            '-P',
-            '{},{}'.format(config['partition']['column'], config['partition']['range']),
-            '-s',
-            str(config['sample']),
-            '-N',
-            '{},{}'.format(config['norm']['method'], ','.join([str(c) for c in config['norm']['columns']])),
-            '-f',
-            ','.join([str(f) for f in config['range']]),
-            '-p',
-            ','.join([str(p) for p in config['plot_cols']]),
-            '-a',
-            ','.join([str(a) for a in config['algorithms']]),
-            '-r',
-            str(config['parameters']['range']),
-            '-m',
-            ','.join([str(x) for x in config['parameters']['min']]),
-            '-t',
-            str(config['threads'])
-        ], stdout=subprocess.PIPE)
+for run in range(config['runs']):
+    proc = subprocess.Popen([
+        'python3',
+        'clustering_suite.py',
+        '-d',
+        str(config['data']),
+        '-P',
+        '{},{}'.format(config['partition']['column'], config['partition']['range']),
+        '-s',
+        str(config['sample']),
+        '-N',
+        '{},{}'.format(config['norm']['method'], ','.join([str(c) for c in config['norm']['columns']])),
+        '-f',
+        ','.join([str(f) for f in config['range']]),
+        '-p',
+        ','.join([str(p) for p in config['plot_cols']]),
+        '-a',
+        ','.join([str(a) for a in config['algorithms']]),
+        '-r',
+        str(config['parameters']['range']),
+        '-m',
+        ','.join([str(x) for x in config['parameters']['min']]),
+        '-t',
+        str(config['threads'])
+    ], stdout=subprocess.PIPE)
 
-        n_clusters = str(proc.stdout.readline().rstrip(), 'utf-8')
-        print(n_clusters)
-        
+    n_clusters = str(proc.stdout.readline().rstrip(), 'utf-8')
+    print(n_clusters)
+
+    with open(current_directory + '/hdbscan_multirun_results.csv', 'a') as f:
         f.write(n_clusters + '\n')
+
 
 # STATISTICAL ANALYSIS AND PLOT CREATION OF RUNS
 if config['runs'] > 1 and "hdbscan" in config['algorithms']:

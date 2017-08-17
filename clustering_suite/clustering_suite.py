@@ -188,18 +188,21 @@ for alg in algs:
 
     # RUN ALGORITHM FOR EACH PARAMETER COMBINATION
     for param_vals in curr_alg_vals:
+        # print(param_vals)
         params_dict = {}
         if type(param_vals) is list:
             params_dict = dict(zip(params, param_vals))
         else:
             params_dict = {params[0]: param_vals}
-
+        
         # print('\tRunning {} with the following parameter(s): {}...'.format(alg, params_dict))
 
         # param_dir = '{}/{}'.format(run_dir, ''.join(['{}_{}'.format(k,int(v)) for k,v in params_dict.items()]))
         # os.mkdir(param_dir)
-        
+        test_time_start = time.time()
         results = session.run(dataframe, params_dict, args.threads)
+        test_time_end = time.time()
+        # print('Elapsed time: {}'.format(int(test_time_end - test_time_start)))
         # print(results['n_clusters'])
         current_run = {'parameters':params_dict, 'results': results}
         final_results['algorithms'][alg]['runs'].append(current_run)
