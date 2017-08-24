@@ -7,7 +7,7 @@
         "range": 6000
     },
 
-    "sample": 200000,
+    "sample": 300000,
     
     "norm":{
         "method": "feature_scale",
