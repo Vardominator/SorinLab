@@ -302,3 +302,4 @@ __pycache__/
 # VARDERES
 RESULTS/
 *.pyc
+config.json

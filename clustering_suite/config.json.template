@@ -8,7 +8,7 @@
     },
 
     "sample": 500000,
-    
+
     "norm":{
         "method": "feature_scale",
         "columns":[4,5]

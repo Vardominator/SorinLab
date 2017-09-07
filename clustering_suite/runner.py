@@ -19,7 +19,7 @@ current_directory = "RESULTS/" + datetime_dir
 os.makedirs(current_directory)
 
 # READ RUN CONFIG
-with open('run_config.json', 'r') as f:
+with open('config.json', 'r') as f:
     config = json.load(f)
 
 # INITIALIZE HDBSCAN_RESULTS.CSVs
