@@ -40,7 +40,7 @@ lazr.uri==1.0.3
 LibAppArmor==2.11.0
 louis==3.0.0
 lxml==3.7.3
-Mako==1.0.6
+Mako==1.2.2
 MarkupSafe==0.23
 matplotlib==2.0.0
 mujoco-py==0.5.7
